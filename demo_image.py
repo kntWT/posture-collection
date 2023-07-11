@@ -5,6 +5,8 @@ import torch
 import sys
 import os
 from typing import List, Dict
+from sixdrepnet import SixDRepNet
+from src.body import Body
 
 Point = Dict[str, float]
 # x: x_coord
@@ -12,14 +14,12 @@ Point = Dict[str, float]
 # score: score
 
 path_pytorch_openpose: str = "pytorch-openpose"
-
 sys.path.append(f"{os.getcwd()}/{path_pytorch_openpose}")
-from src.body import Body
-
 body_estimation = Body(f"{path_pytorch_openpose}/model/body_pose_model.pth")
-
 # デバイス取得
 torch.device("mps")
+
+# head_pose_model = SixDRepNet()
 
 def parse_point(cand) -> Point:
     return {
@@ -41,3 +41,9 @@ def calc_neck_dist(img=None) -> float:
     neck: Point = parse_point(candidate[1])
     dist = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     return dist
+
+def calc_head_angle(img=None) -> float:
+    # pitch, yaw, roll = head_pose_model.predict(oriImg)
+    # return pitch
+    return 0
+    
