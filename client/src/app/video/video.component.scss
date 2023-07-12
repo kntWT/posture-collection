@@ -1,0 +1,8 @@
+.video-frame {
+    position: relative;
+    text-align: center;
+    -webkit-transform: scaleX(-1); 
+    transform: scaleX(-1);
+    min-width: 300px;
+    min-height: 300px;
+}

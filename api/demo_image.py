@@ -6,7 +6,6 @@ import sys
 import os
 from typing import List, Dict
 from sixdrepnet import SixDRepNet
-from src.body import Body
 
 Point = Dict[str, float]
 # x: x_coord
@@ -15,6 +14,7 @@ Point = Dict[str, float]
 
 path_pytorch_openpose: str = "pytorch-openpose"
 sys.path.append(f"{os.getcwd()}/{path_pytorch_openpose}")
+from src.body import Body
 body_estimation = Body(f"{path_pytorch_openpose}/model/body_pose_model.pth")
 # デバイス取得
 torch.device("mps")
@@ -32,13 +32,20 @@ oriImg = cv2.imread(f"{path_pytorch_openpose}/images/demo.jpg")
 if oriImg is None:
     raise ValueError(f"the file {sys.argv[1]} could not open")
 
-def calc_neck_dist(img=None) -> float:
+def calc_neck_dist(img: np.ndarray = None) -> float:
     if img is None:
         return -1
-    candidate, subset = body_estimation(oriImg)
+    candidate, subset = body_estimation(img)
+    if len(candidate) <= 0:
+        print("cannot detected")
+        return -1
 
     nose: Point = parse_point(candidate[0])
     neck: Point = parse_point(candidate[1])
+    if nose["score"] < 0.3 or neck["score"] < 0.3:
+        print(f"nose: {nose['score']}, neck: {neck['score']}")
+        return -1
+
     dist = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     return dist
 
