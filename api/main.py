@@ -2,7 +2,10 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import cv2
-from demo_image import calc_neck_dist, calc_head_angle
+import asyncio
+from demo_image import calc_neck_dist, calc_head_angle, save_file, remove_file
+from typing import Dict, List, Any
+
 app = FastAPI()
 origins = [
     "http://localhost",
@@ -22,22 +25,41 @@ app.add_middleware(
 def get_hello_world():
     return {"Hello": "World"}
 
-@app.post("/neck")
-def get_neck_dist(file: UploadFile = File(...)) -> float:
-    file_name: str = f"temp-images/{file.filename.replace(' ','-').replace('/', '-')}"
-    with open(file_name,'wb+') as f:
-        f.write(file.file.read())
-        f.close()
+@app.post("/score")
+async def get_posture_score(file: UploadFile = File(...)) -> Dict[str, float]:
+    file_name: str = save_file(file)
     img = cv2.imread(file_name)
-    dist: float = calc_neck_dist(img)
+    tasks: List[Any] = []
+    tasks.append(calc_neck_dist(img))
+    tasks.append(calc_head_angle(img))
+    [neck_len, head_angle] = await asyncio.gather(*tasks)
     try:
-        os.remove(file_name)
+        remove_file(file_name)
     except FileNotFoundError:
-        print(f"the file {file_name} does not exist")
-        print(os.listdir("temp-images/"))
-    
+        pass
+    return {
+        "neckLength": neck_len,
+        "headAngle": head_angle,
+    }
+
+@app.post("/neck")
+async def get_neck_dist(file: UploadFile = File(...)) -> float:
+    file_name: str = save_file(file)
+    img = cv2.imread(file_name)
+    dist: float = await calc_neck_dist(img)
+    try:
+        remove_file(file_name)
+    except FileNotFoundError:
+        pass
     return dist
 
-@app.get("/head")
-def get_head_angle() -> float:
-    return calc_head_angle("")
+@app.post("/head")
+async def get_head_angle(file: UploadFile = File(...)) -> float:
+    file_name: str = save_file(file)
+    img = cv2.imread(file_name)
+    try:
+        remove_file(file_name)
+    except FileNotFoundError:
+        pass
+    yaw: float = await calc_head_angle(img)
+    return yaw

@@ -1,9 +1,29 @@
-<div  class="video-frame">
-    <video
-        id="video"
-        muted
-        autoplay
-        playsinline
-        outline
-    ></video>
+<div>
+    <div  class="video-frame">
+        <video
+            id="video"
+            muted
+            autoplay
+            playsinline
+            outline
+        ></video>
+    </div>
+    <div class="ui-pannel">
+        <div *ngIf="isPlaying; else play">
+            <button mat-icon-button (click)="handlePause()">
+                <mat-icon>pause</mat-icon>
+            </button>
+        </div>
+        <ng-template #play>
+            <button mat-icon-button (click)="handlePlay()">
+                <mat-icon>play_arrow</mat-icon>
+            </button>
+        </ng-template>
+
+        <div *ngIf="isPlaying">
+            <button mat-raised-button (click)="calibrateNeckLength()">
+                キャリブレーション
+            </button>
+        </div>
+    </div>
 </div>

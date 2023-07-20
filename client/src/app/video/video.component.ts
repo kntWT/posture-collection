@@ -1,17 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { NgIf } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { PostureScore } from './PostureScore';
 
 @Component({
   selector: 'app-video',
   templateUrl: './video.component.html',
-  styleUrls: ['./video.component.scss']
+  styleUrls: ['./video.component.scss'],
+  standalone: true,
+  imports: [MatButtonModule, MatIconModule, NgIf],
 })
-export class VideoComponent implements OnInit, OnDestroy {
 
+export class VideoComponent implements OnInit, OnDestroy {
   // videoEl: HTMLElement | null = null;
   videoEl: HTMLVideoElement | null = null;
   width: number = 640;
   height: number = 640;
-  postureScore: number = 0;
+  standardNeckLength: number | null = null;
+  postureScore: PostureScore = {neckLength: -1, headAngle: -1};
+  isPlaying: boolean = true;
 
   constructor() {
   }
@@ -39,8 +47,19 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   async handleOnPlay(e: Event): Promise<void> {
-    this.postureScore = (await this.getPostureScore()) ?? 0;
+    if (this.videoEl?.paused) return;
+    this.postureScore =  (await this.getPostureScore()) ?? {neckLength: -1, headAngle: -1};
     console.log(this.postureScore)
+  }
+
+  public handlePlay(): void {
+    this.videoEl?.play();
+    this.isPlaying = true;
+  }
+  
+  public handlePause(): void {
+    this.videoEl?.pause();
+    this.isPlaying = false;
   }
 
   getFrameAsFile(): Promise<File | null> {
@@ -68,17 +87,22 @@ export class VideoComponent implements OnInit, OnDestroy {
     })
   }
 
-  async getPostureScore(): Promise<number | null> {
+  async getPostureScore(): Promise<PostureScore | null> {
     const file = await this.getFrameAsFile();
     if (file === null) return null;
 
     const fd = new FormData();
     fd.append("file", file);
-    return await (fetch("http://localhost:8000/neck", {
+    return await (fetch("http://localhost:8000/score", {
       method: "POST",
       body: fd,
     })
     .then(res => res.json())
     .catch(e => -1));
+  }
+
+  async calibrateNeckLength() {
+    this.standardNeckLength = (await this.getPostureScore())?.neckLength ?? null;
+    console.log("standard: " + this.standardNeckLength);
   }
 }

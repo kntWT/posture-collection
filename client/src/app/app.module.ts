@@ -10,13 +10,13 @@ import { VideoComponent } from './video/video.component';
 @NgModule({
   declarations: [
     AppComponent,
-    VideoComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    HeaderComponent
+    HeaderComponent,
+    VideoComponent,
   ],
   providers: [],
   bootstrap: [AppComponent]
