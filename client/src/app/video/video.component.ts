@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { PostureScore } from './PostureScore';
+import { PostureScore } from './types/PostureScore';
 
 @Component({
   selector: 'app-video',
@@ -15,7 +15,7 @@ import { PostureScore } from './PostureScore';
 export class VideoComponent implements OnInit, OnDestroy {
   // videoEl: HTMLElement | null = null;
   videoEl: HTMLVideoElement | null = null;
-  width: number = 640;
+  width: number = 320;
   height: number = 640;
   standardNeckLength: number | null = null;
   postureScore: PostureScore = {neckLength: -1, headAngle: -1};
@@ -69,10 +69,10 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
 
       const canvas = document.createElement("canvas");
-      canvas.width = this.videoEl.videoWidth;
-      canvas.height = this.videoEl.videoHeight;
+      canvas.width = this.videoEl.videoWidth / 2;
+      canvas.height = this.videoEl.videoHeight / 2;
       const ctx = canvas.getContext("2d");
-      ctx?.drawImage(this.videoEl, 0, 0, this.videoEl.videoWidth, this.videoEl.videoHeight);
+      ctx?.drawImage(this.videoEl, 0, 0, this.videoEl.videoWidth / 2, this.videoEl.videoHeight / 2);
       let file: File | null = null;
       canvas.toBlob(blob => {
         if (blob === null) {
@@ -82,7 +82,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         
         file = new File([blob], `${new Date().toLocaleString("ja-JP-u-ca-japanese")}.jpeg`);
         resolve(file);
-      }, "image/jpeg", 0.9);
+      }, "image/jpeg", 0.5);
       return null;
     })
   }
