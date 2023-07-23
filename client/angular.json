@@ -72,7 +72,14 @@
               "browserTarget": "client:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "browserTarget": "myApp:build",
+            "ssl": true,
+            "sslKey": "../ssl/localhost-key.pem",
+            "sslCert": "../ssl/localhost.pem",
+            "disableHostCheck": true
+          }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

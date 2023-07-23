@@ -5,6 +5,7 @@ import cv2
 import asyncio
 from demo_image import calc_neck_dist, calc_head_angle, save_file, remove_file
 from typing import Dict, List, Any
+import uvicorn
 
 app = FastAPI()
 origins = [
@@ -63,3 +64,13 @@ async def get_head_angle(file: UploadFile = File(...)) -> float:
         pass
     yaw: float = await calc_head_angle(img)
     return yaw
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        ssl_keyfile="../ssl/localhost-key.pem",
+        ssl_certfile="../ssl/localhost.pem"
+    )
