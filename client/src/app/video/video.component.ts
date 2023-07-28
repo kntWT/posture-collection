@@ -93,7 +93,6 @@ export class VideoComponent implements OnInit, OnDestroy {
 
     const fd = new FormData();
     fd.append("file", file);
-    await fetch("https://localhost:8000/", {method: "GET"}).then(res => console.log(res.json()))
     return await (fetch("https://localhost:8000/score", {
       method: "POST",
       body: fd,
