@@ -3,6 +3,7 @@ import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PostureScore } from './types/PostureScore';
+import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
 
 @Component({
   selector: 'app-video',
@@ -13,13 +14,13 @@ import { PostureScore } from './types/PostureScore';
 })
 
 export class VideoComponent implements OnInit, OnDestroy {
-  // videoEl: HTMLElement | null = null;
   videoEl: HTMLVideoElement | null = null;
   width: number = 320;
   height: number = 640;
   standardNeckLength: number | null = null;
   postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
+  deviceOrientationDetector: DeviceOrientationDetector | null = null;
 
   constructor() {
   }
@@ -40,6 +41,7 @@ export class VideoComponent implements OnInit, OnDestroy {
       });
       this.videoEl.srcObject = stream;
       this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
+      this.deviceOrientationDetector = new DeviceOrientationDetector();
   }
 
   ngOnDestroy(): void {
@@ -101,7 +103,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     .catch(e => -1));
   }
 
-  async calibrateNeckLength() {
+  async calibrateNeckLength(): Promise<void> {
     this.standardNeckLength = (await this.getPostureScore())?.neckLength ?? null;
     console.log("standard: " + this.standardNeckLength);
   }
