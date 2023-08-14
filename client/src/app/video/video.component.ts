@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgIf } from '@angular/common';
+import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { PostureScore } from './types/PostureScore';
@@ -10,7 +11,7 @@ import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
   templateUrl: './video.component.html',
   styleUrls: ['./video.component.scss'],
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, NgIf],
+  imports: [MatButtonModule, MatIconModule, NgIf, OverlayModule],
 })
 
 export class VideoComponent implements OnInit, OnDestroy {
@@ -21,27 +22,15 @@ export class VideoComponent implements OnInit, OnDestroy {
   postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
   deviceOrientationDetector: DeviceOrientationDetector | null = null;
+  openOverlay: boolean = true;
+  allowPermission: boolean = false;
 
   constructor() {
   }
 
-  async ngOnInit(): Promise<void> {
-      this.videoEl = document.getElementById("video") as HTMLVideoElement;
-      if (this.videoEl === null) {
-        console.log("failed to get video element");
-        return
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-              facingMode: "user",
-              width: {min: 0, max: this.width},
-              height: {min: 0, max: this.height},
-          }
-      });
-      this.videoEl.srcObject = stream;
-      this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
-      this.deviceOrientationDetector = new DeviceOrientationDetector();
+  ngOnInit():void {
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
   }
 
   ngOnDestroy(): void {
@@ -64,6 +53,30 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.isPlaying = false;
   }
 
+  async handleAllowPermission(): Promise<void> {
+    this.videoEl = document.getElementById("video") as HTMLVideoElement;
+    if (this.videoEl === null) {
+      console.log("failed to get video element");
+      return
+    }
+    const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+            facingMode: "user",
+            width: {min: 0, max: this.width},
+            height: {min: 0, max: this.height},
+        }
+    });
+    this.videoEl.srcObject = stream;
+    this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
+    this.videoEl?.play();
+
+    this.allowPermission = true;
+    this.deviceOrientationDetector = new DeviceOrientationDetector();
+    
+    this.openOverlay = false;
+  }
+
   getFrameAsFile(): Promise<File | null> {
     return new Promise((resolve, reject) => {
       if (this.videoEl === null || this.videoEl.paused || this.videoEl.ended) {
@@ -71,10 +84,10 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
 
       const canvas = document.createElement("canvas");
-      canvas.width = this.videoEl.videoWidth / 2;
-      canvas.height = this.videoEl.videoHeight / 2;
+      canvas.width = this.videoEl.videoWidth * 2;
+      canvas.height = this.videoEl.videoHeight * 2;
       const ctx = canvas.getContext("2d");
-      ctx?.drawImage(this.videoEl, 0, 0, this.videoEl.videoWidth / 2, this.videoEl.videoHeight / 2);
+      ctx?.drawImage(this.videoEl, 0, 0, canvas.width, canvas.height);
       let file: File | null = null;
       canvas.toBlob(blob => {
         if (blob === null) {
@@ -95,7 +108,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
     const fd = new FormData();
     fd.append("file", file);
-    return await (fetch("https://localhost:8000/score", {
+    return await (fetch("/api/score", {
       method: "POST",
       body: fd,
     })

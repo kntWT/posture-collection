@@ -39,7 +39,7 @@ export class DeviceOrientationDetector {
         }
 
         if(navigator && navigator.userAgent) {
-            this.osCorrection = navigator.userAgent.indexOf("Android") == -1 ? 0 : 90;
+            this.osCorrection = navigator.userAgent.indexOf("Android") === -1 ? 0 : 90;
         }
     }
 

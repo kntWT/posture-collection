@@ -1,9 +1,10 @@
+<div cdkOverlayOrigin #trigger="cdkOverlayOrigin"></div>
+
 <div>
     <div  class="video-frame">
         <video
             id="video"
             muted
-            autoplay
             playsinline
             outline
         ></video>
@@ -27,3 +28,15 @@
         </div>
     </div>
 </div>
+
+<ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="trigger"
+    [cdkConnectedOverlayOpen]="openOverlay"
+    >
+    <div class="overlay">
+        <button (click)="handleAllowPermission()">
+            動作と方向へのアクセスを許可する
+        </button>
+    </div>
+</ng-template>
