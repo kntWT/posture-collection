@@ -45,15 +45,22 @@ async def calc_neck_dist(img: np.ndarray = None) -> float:
         print("cannot detected")
         return -1
     
-    nose: Point = parse_point(candidate[int(subset[0][0])])
-    neck: Point = parse_point(candidate[int(subset[0][1])])
-    if nose["score"] < 0.5 or neck["score"] < 0.1:
-        print(f"nose: {nose['score']}, neck: {neck['score']}")
-        _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(len(subset))])
-        canvas: np.ndarray = copy.deepcopy(img)
-        canvas = util.draw_bodypose(canvas, candidate, _subset)
-        cv2.imwrite("temp-images/" + ''.join(random.choices(string.ascii_uppercase +string.digits, k=10)) + ".jpg", canvas)
+    nose_index: int = int(subset[0][0])
+    neck_index: int = int(subset[0][1])
+    if nose_index == -1 or neck_index == -1:
+        print("nose or neck cannot detected")
         return -1
+    
+    nose: Point = parse_point(candidate[nose_index])
+    neck: Point = parse_point(candidate[neck_index])
+    # if nose["score"] < 0.5 or neck["score"] < 0.1:
+    #     print(f"nose: {nose['score']}, neck: {neck['score']}")
+    # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
+    _subset: np.ndarray = np.array([[s if i < 2 else -1 for i, s in enumerate(subset[n])] for n in range(1)])
+    canvas: np.ndarray = copy.deepcopy(img)
+    canvas = util.draw_bodypose(canvas, candidate, _subset)
+    cv2.imwrite(f"temp-images/neck/{nose['score']}_{neck['score']}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
+    # return -1
 
     dist: float = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     return dist
@@ -61,11 +68,14 @@ async def calc_neck_dist(img: np.ndarray = None) -> float:
 async def calc_head_angle(img=None) -> float:
     if img is None:
         return -1
-    pitch, yaw, roll = head_pose_model.predict(img)
+    pitch, yaw, roll = map(lambda x: x[0], head_pose_model.predict(img))
+    canvas: np.ndarray = copy.deepcopy(img)
+    head_pose_model.draw_axis(canvas, pitch, yaw, roll)
+    cv2.imwrite(f"temp-images/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
     return pitch
     
 def save_file(file) -> str:
-    file_name: str = f"temp-images/{file.filename.replace(' ','-').replace('/', '-')}"
+    file_name: str = f"temp-images/original/{file.filename.replace(' ','-').replace('/', '-')}"
     with open(file_name,'wb+') as f:
         f.write(file.file.read())
         f.close()
@@ -76,6 +86,5 @@ def remove_file(file_name: str) -> NoReturn:
         os.remove(file_name)
     except FileNotFoundError:
         print(f"the file {file_name} does not exist")
-        print(os.listdir("temp-images/"))
     return
     
