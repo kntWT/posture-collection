@@ -1,8 +1,9 @@
 {
-    "/api/": {
-        "target": "https://localhost:8000/",
-        "secure": true,
+    "/api/*": {
+        "target": "https://localhost.justune.net:8000",
+        "secure": false,
         "pathRewrite": {"^/api/" : "/"},
+        "changeOrigin": true,
         "logLevel": "debug"
     }
 }
