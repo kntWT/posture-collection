@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 class InternalPosture(BaseModel):
     user_id: int
+    image_path: str
     orientation_alpha: float
     orientation_beta: float
     orientation_gamma: float
