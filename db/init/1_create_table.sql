@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS internal_postures (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL DEFAULT 0,
+    user_id INT NOT NULL DEFAULT 1,
     orientation_alpha DOUBLE NOT NULL,
     orientation_beta DOUBLE NOT NULL, 
     orientation_gamma DOUBLE NOT NULL,
