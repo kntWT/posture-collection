@@ -4,12 +4,16 @@ import math
 import torch
 import sys
 import os
+from dotenv import load_dotenv
 from typing import List, Dict, NoReturn
 import copy
 import random
 import string
-import asyncio
 from sixdrepnet import SixDRepNet
+
+load_dotenv(".env")
+image_dir: str = os.environ.get("IMAGE_DIR")
+original_image_dir: str = os.environ.get("ORIGINAL_IMAGE_DIR")
 
 Point = Dict[str, float]
 # x: x_coord
@@ -33,10 +37,6 @@ def parse_point(cand) -> Point:
         "score": cand[2],
     }
 
-oriImg = cv2.imread(f"{path_pytorch_openpose}/images/demo.jpg")
-if oriImg is None:
-    raise ValueError(f"the file {sys.argv[1]} could not open")
-
 async def calc_neck_dist(img: np.ndarray = None) -> float:
     if img is None:
         return -1
@@ -53,14 +53,14 @@ async def calc_neck_dist(img: np.ndarray = None) -> float:
     
     nose: Point = parse_point(candidate[nose_index])
     neck: Point = parse_point(candidate[neck_index])
-    # if nose["score"] < 0.5 or neck["score"] < 0.1:
-    #     print(f"nose: {nose['score']}, neck: {neck['score']}")
+    # _subset: np.ndarray = np.array([[s if i < 2 else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
-    _subset: np.ndarray = np.array([[s if i < 2 else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     canvas: np.ndarray = copy.deepcopy(img)
-    canvas = util.draw_bodypose(canvas, candidate, _subset)
+    canvas = util.draw_bodypose(canvas, candidate, subset)
     cv2.imwrite(f"images/neck/{nose['score']}_{neck['score']}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
-    # return -1
+    if nose["score"] < 0.5 or neck["score"] < 0.1:
+        print(f"nose: {nose['score']}, neck: {neck['score']}")
+        return -1
 
     dist: float = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     return dist
@@ -71,11 +71,11 @@ async def calc_head_angle(img=None) -> float:
     pitch, yaw, roll = map(lambda x: x[0], head_pose_model.predict(img))
     canvas: np.ndarray = copy.deepcopy(img)
     head_pose_model.draw_axis(canvas, pitch, yaw, roll)
-    cv2.imwrite(f"images/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
+    cv2.imwrite(f"{image_dir}/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
     return pitch
     
 def save_file(file) -> str:
-    file_name: str = f"images/original/{file.filename.replace(' ','-').replace('/', '-')}"
+    file_name: str = f"{original_image_dir}/{file.filename}"
     with open(file_name,'wb+') as f:
         f.write(file.file.read())
         f.close()
