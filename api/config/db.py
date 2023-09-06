@@ -12,7 +12,7 @@ db_name = os.environ.get("MYSQL_DATABASE")
 host = 'mysql' # dockerのdbのサービス名 
 
 def connect_db(trial: int):
-    if trial >= 10000:
+    if trial >= 30:
         print("connection refused")
         return None, None, None
     try:
@@ -20,8 +20,9 @@ def connect_db(trial: int):
         meta = MetaData()
         conn = engine.connect()
         return engine, meta, conn
-    except(Exception):
+    except Exception as e:
         time.sleep(1)
+        print(e)
         return connect_db(trial + 1)
     
 engine, meta, conn = connect_db(0)

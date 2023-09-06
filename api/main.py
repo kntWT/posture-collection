@@ -1,5 +1,8 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from routers.user import user
+from routers.internal_posture import internal_posture
+from routers.external_posture import external_posture
 import cv2
 import asyncio
 # from demo_image import calc_neck_dist, calc_head_angle, save_file, remove_file
@@ -16,6 +19,7 @@ origins = [
     "https://localhost.justune.net",
     "http://localhost.justune.net:4200",
     "https://localhost.justune.net:4200",
+    "*"
 ]
 
 app.add_middleware(
@@ -30,6 +34,11 @@ app.add_middleware(
 @app.get("/")
 def get_hello_world():
     return {"Hello": "World"}
+
+routers_list = [user, internal_posture, external_posture]
+
+for router in routers_list:
+    app.include_router(router)
 
 # @app.post("/score")
 # async def get_posture_score(file: UploadFile = File(...)) -> Dict[str, float]:
