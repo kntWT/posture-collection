@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class InternalPosture(BaseModel):
     user_id: int
@@ -13,6 +14,7 @@ class InternalPosture(BaseModel):
     nose_y: float | None
     neck_to_nose: float | None
     standard_dist: float | None
+    created_at: datetime
 
 class InternalPostureOnlyOrientation(BaseModel):
     orientation_alpha: float
