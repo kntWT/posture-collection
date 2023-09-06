@@ -1,7 +1,7 @@
 from .jst import JST
 from datetime import datetime
 from fastapi import APIRouter
-from models.user import users as user_model
+from models.user import user as user_model
 from config.db import conn
 from schemas.user import User, UserPost, UserPut
 from sqlalchemy import select
