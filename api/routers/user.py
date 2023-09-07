@@ -1,6 +1,7 @@
 from .jst import JST
 from datetime import datetime
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from models.user import user as user_model
 from config.db import conn
 from schemas.user import User, UserPost, UserPut
@@ -8,6 +9,7 @@ from sqlalchemy import select
 from typing import List
 
 user = APIRouter(prefix="/user")
+security = HTTPBasic()
 
 @user.post("/")
 async def create_user(user: UserPost) -> User:
@@ -16,6 +18,20 @@ async def create_user(user: UserPost) -> User:
         created_at = datetime.now(JST)
     ))
     return conn.execute(select(user_model).filter(user_model.c.id==user.id)).first()
+
+@user.get("/auth/")
+async def auth_basic(credentials: HTTPBasicCredentials = Depends(security)):
+    username: str = credentials.username
+    password: str = credentials.password
+    tmp_user: User = conn.execute(select(user_model).filter(user_model.c.name==username and user_model.c.password==password)).first()
+    if tmp_user is None:
+        raise HTTPException(
+                status_code=401,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Basci"}
+            )
+    else:
+        return tmp_user._asdict()
 
 @user.get("/")
 async def get_users() -> List[User]:
