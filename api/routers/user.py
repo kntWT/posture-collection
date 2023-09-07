@@ -41,6 +41,10 @@ async def get_users() -> List[User]:
 async def get_user_by_id(id: int) -> User:
     return conn.execute(select(user_model).filter(user_model.c.id==id)).first()
 
+@user.get("/guest/")
+async def get_guest_user() -> User:
+    return conn.execute(select(user_model).filter(user_model.c.id==1)).first()
+
 @user.put("/calibration/{id}")
 async def update_user_calibration(id: int, user: UserPut) -> User:
     conn.execute(user_model.update().values(
