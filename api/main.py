@@ -85,6 +85,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-        ssl_keyfile="../ssl/localhost.justune.net-key.pem",
-        ssl_certfile="../ssl/localhost.justune.net.cert.pem"
+        # ssl_keyfile="../ssl/localhost.justune.net-key.pem",
+        # ssl_certfile="../ssl/localhost.justune.net.cert.pem"
     )

@@ -77,8 +77,8 @@
             "browserTarget": "myApp:build",
             "proxyConfig": "src/proxy.conf.json",
             "ssl": true,
-            "sslKey": "../ssl/localhost.justune.net-key.pem",
-            "sslCert": "../ssl/localhost.justune.net.cert.pem",
+            "sslKey": "../ssl/localhost-key.pem",
+            "sslCert": "../ssl/localhost.pem",
             "disableHostCheck": true
           }
         },
