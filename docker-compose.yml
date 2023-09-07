@@ -5,6 +5,7 @@ services:
       context: ./db
     env_file:
       - ./.env
+    container_name: posture-correction-mysql
     environment:
       - TZ=Asia/Tokyo
     volumes:
@@ -18,9 +19,10 @@ services:
   
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    env_file: ./.env
+    container_name: posture-correction-phpmyadmin
     ports:
       - 4203:80
-    env_file: ./.env
     depends_on:
       - mysql
     networks:
@@ -32,6 +34,7 @@ services:
       dockerfile: api/Dockerfile
     env_file:
       - ./.env
+    container_name: posture-correction-api
     volumes:
       - ./api/.venv:/app/.venv
       - ./api/__pycache__:/app/__pycache__
@@ -48,6 +51,7 @@ services:
     build: 
       context: ./
       dockerfile: client/Dockerfile
+    container_name: posture-correction-client
     ports:
       - 4200:4200
     volumes:
