@@ -7,6 +7,7 @@ user = Table(
     'users', meta,
     Column('id', Integer, nullable=False, primary_key=True, autoincrement=True),
     Column('name', String(255), nullable=False),
+    Column('password', String(255), nullable=False),
     Column('neck_to_nose_standard', DOUBLE),
     Column('created_at', TIMESTAMP, server_default=current_timestamp())
 )

@@ -7,6 +7,7 @@ USE posture_correction_db;
 CREATE TABLE IF NOT EXISTS users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
+    password TEXT NOT NULL,
     neck_to_nose_standard DOUBLE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

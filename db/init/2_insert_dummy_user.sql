@@ -3,4 +3,4 @@ CREATE DATABASE IF NOT EXISTS `posture_correction_db` DEFAULT CHARACTER SET utf8
 
 USE `posture_correction_db`;
 
-INSERT INTO `users` (`name`) VALUES ("anonymous");
+INSERT INTO `users` (`name`, `password`) VALUES ("anonymous", "posture-correction");
