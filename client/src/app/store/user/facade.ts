@@ -12,6 +12,7 @@ import { UserStoreModule } from './module';
 })
 export class UserFacade {
   loading$ = this.store.pipe(select(UserSelectors.getLoading));
+  isLoggedIn$ = this.store.pipe(select(UserSelectors.getIsLoggedIn));
   user$ = this.store.pipe(select(UserSelectors.getUser));
 
   constructor(private store: Store<State>) {}
