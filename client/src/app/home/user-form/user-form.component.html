@@ -1,0 +1,15 @@
+<div>
+    <form [formGroup]="form">
+        <div>
+            <label>ユーザー名</label>
+            <input type="text" formControlName="name">
+        </div>
+        <div>
+            <label>パスワード</label>
+            <input type="password" formControlName="password">
+        </div>
+    </form>
+    <button>
+        <a mat-button (click)="handleSubmit()">{{title}}</a>
+    </button>
+</div>

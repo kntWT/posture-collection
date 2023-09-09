@@ -1,5 +1,11 @@
 <div class="container">
-    <button>
-        <a routerLink="/measure">計測</a>
-    </button>
+    <mat-card>
+        <app-user-form (submitEvent)="handleLogin($event)" [title]="'ログイン'" />
+        <mat-divider />
+        <app-user-form (submitEvent)="handleSignup($event)" [title]="'ユーザ登録'" />
+        <mat-divider />
+        <button>
+            <a mat-button (click)="handleLoginAsGuest()">ゲストユーザとしてログイン</a>
+        </button>
+    </mat-card>
 </div>
