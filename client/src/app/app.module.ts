@@ -7,6 +7,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HeaderComponent } from './header/header.component';
 import { VideoComponent } from './video/video.component';
 import { HomeComponent } from './home/home.component';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
 
 @NgModule({
   declarations: [
@@ -19,6 +21,8 @@ import { HomeComponent } from './home/home.component';
     BrowserAnimationsModule,
     HeaderComponent,
     VideoComponent,
+    StoreModule.forRoot({}, {}),
+    EffectsModule.forRoot([]),
   ],
   providers: [],
   bootstrap: [AppComponent]
