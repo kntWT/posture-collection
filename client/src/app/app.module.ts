@@ -9,11 +9,15 @@ import { VideoComponent } from './video/video.component';
 import { HomeComponent } from './home/home.component';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
+import { UserFacade } from './store/user/facade';
+import { UserFormComponent } from './home/user-form/user-form.component';
+import * as UserReducer from './store/user/reducer';
+import { UserStoreModule } from './store/user/module';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
   ],
   imports: [
     BrowserModule,
@@ -21,10 +25,14 @@ import { EffectsModule } from '@ngrx/effects';
     BrowserAnimationsModule,
     HeaderComponent,
     VideoComponent,
-    StoreModule.forRoot({}, {}),
+    HomeComponent,
+    HttpClientModule,
+    UserFormComponent,
+    UserStoreModule,
+    StoreModule.forRoot({ [UserReducer.userFeatureKey]: UserReducer.reducer }),
     EffectsModule.forRoot([]),
   ],
-  providers: [],
+  providers: [UserFacade],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

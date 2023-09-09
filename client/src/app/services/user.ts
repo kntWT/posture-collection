@@ -6,10 +6,12 @@ import { tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
-	providedIn: 'root',
+	providedIn: "root",
 })
 export class UserService {
-	constructor(private http: HttpClient) {}
+	
+    constructor(private http: HttpClient) {}
+
 	private endpoint = `${environment.API_ENDPOINT}user`;
 
 	authHeader = (props: UserBasicInfo) => ({

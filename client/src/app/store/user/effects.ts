@@ -3,8 +3,9 @@ import { UserService } from '../../services/user';
 import * as UserActions from "./actions";
 import { catchError, concatMap, map, of } from "rxjs";
 import { UserBasicInfo, UserCalibrateion } from "src/app/types/User";
+import { Injectable } from "@angular/core";
 
-
+@Injectable()
 export class UserEffects {
 
     constructor(private actions$: Actions, private userService: UserService){}
