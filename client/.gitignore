@@ -42,5 +42,5 @@ testem.log
 Thumbs.db
 
 .angular
-proxy.conf.json
+src/proxy.conf.json
 src/environments/*
