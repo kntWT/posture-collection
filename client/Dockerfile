@@ -6,6 +6,6 @@ WORKDIR /app
 COPY client/package*.json .
 RUN npm install
 COPY client .
-# RUN npm run build
+COPY client/entrypoint.sh /tmp/
 
-CMD ["npm", "run", "start"]
+CMD [ "sh", "-x", "/tmp/entrypoint.sh" ]
