@@ -1,5 +1,14 @@
 .toolbar {
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
+
+    div {
+        min-width: 20%;
+        display: flex;
+
+        button {
+            justify-content: end;
+        }
+    }
 }

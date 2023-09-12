@@ -1,3 +1,10 @@
 <mat-toolbar color="primary" class="toolbar">
+    <div></div>
     <p>姿勢矯正デモ</p>
+    <div *ngIf="isLoggedIn$ | async; else dummy">
+        <button (click)="handleLogout()">ログアウト</button>
+    </div>
+    <ng-template #dummy>
+        <div></div>
+    </ng-template>
 </mat-toolbar>
