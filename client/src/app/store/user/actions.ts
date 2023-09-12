@@ -16,6 +16,11 @@ export const signupFailure = createAction(
 	props<{ error: any }>(),
 );
 
+export const set = createAction(
+  '[User] Set',
+  props<{ user: User }>(),
+)
+
 export const login = createAction(
 	'[User] Login',
 	props<UserBasicInfo>(),
@@ -68,6 +73,7 @@ const actions = union({
 	signup,
 	signupSuccess,
 	signupFailure,
+  set,
 	login,
 	loginSuccess,
 	loginFailure,
