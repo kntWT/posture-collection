@@ -2,3 +2,35 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@for $i from 1 through 6 {
+    $px: $i * 4px;
+    .ma-#{$i} {
+        margin: $px;
+    }
+
+    .mx-#{$i} {
+        margin-left: $px;
+        margin-right: $px;
+    }
+
+    .my-#{$i} {
+        margin-top: $px;
+        margin-bottom: $px;
+    }
+
+    .pa-#{$i} {
+        padding: $px;
+    }
+
+    .px-#{$i} {
+        padding-left: $px;
+        padding-right: $px;
+    }
+
+    .py-#{$i} {
+        padding-top: $px;
+        padding-bottom: $px;
+    }
+
+}

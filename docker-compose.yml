@@ -51,12 +51,15 @@ services:
     build: 
       context: ./
       dockerfile: client/Dockerfile
+    env_file:
+      - ./.env
     container_name: posture-correction-client
     ports:
       - 4200:4200
     volumes:
       - ./client:/app
       - ./client/node_modules:/app/node_modules
+      - ./client/src/proxy.conf.json:/app/src/proxy.conf.json
     depends_on:
       - mysql
     tty: true
