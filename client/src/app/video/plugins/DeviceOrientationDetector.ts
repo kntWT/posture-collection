@@ -1,12 +1,7 @@
+import { Orientation } from "src/app/types/Orientation";
 
 interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
     requestPermission?: () => Promise<'granted' | 'denied'>;
-}
-
-type Orientation = {
-    alpha: number | null;
-    beta: number | null;
-    gamma: number | null;
 }
 
 export class DeviceOrientationDetector {

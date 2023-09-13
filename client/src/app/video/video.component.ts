@@ -3,8 +3,13 @@ import { NgIf } from '@angular/common';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { PostureScore } from './types/PostureScore';
+// import { PostureScore } from '../types/PostureScore';
 import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
+import { PostureService } from '../services/posture';
+import { UserFacade } from '../store/user/facade';
+import { calibrate } from '../store/user/actions';
+import { Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-video',
@@ -18,29 +23,40 @@ export class VideoComponent implements OnInit, OnDestroy {
   videoEl: HTMLVideoElement | null = null;
   width: number = 320;
   height: number = 640;
-  standardNeckLength: number | null = null;
-  postureScore: PostureScore = {neckLength: -1, headAngle: -1};
+  // standardNeckLength: number | null = null;
+  // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
   deviceOrientationDetector: DeviceOrientationDetector | null = null;
   openOverlay: boolean = true;
   allowPermission: boolean = false;
 
-  constructor() {
-  }
+  userIdSubscription: Subscription | undefined;
+
+  constructor(private router: Router, private userFacade: UserFacade, private postureService: PostureService) {}
 
   ngOnInit():void {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
+
+      this.userFacade.loading$.subscribe(loading => {
+        if (loading) return;
+        this.userFacade.user$.subscribe(user => {
+          if (user.id !== 0) return;
+          if (alert("ログインしてから再度アクセスしてください．") === undefined) {
+            this.router.navigate(["/"]);
+          }
+        })
+      })
   }
 
   ngOnDestroy(): void {
       this.videoEl?.removeEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
+      this.userIdSubscription?.unsubscribe();
   }
 
   async handleOnPlay(e: Event): Promise<void> {
     if (this.videoEl?.paused) return;
-    this.postureScore =  (await this.getPostureScore()) ?? {neckLength: -1, headAngle: -1};
-    console.log(this.postureScore)
+    this.postPosture();
   }
 
   public handlePlay(): void {
@@ -95,29 +111,49 @@ export class VideoComponent implements OnInit, OnDestroy {
           return;
         }
         
-        file = new File([blob], `${new Date().toLocaleString("ja-JP-u-ca-japanese")}.jpeg`);
+        const now = new Date();
+        const fileName: string = `${now.toLocaleString("ja-JP-u-ca-japanese")}:${now.getMilliseconds()}`
+          .replaceAll("/", "_")
+          .replaceAll(" ", "_");
+        file = new File([blob], `${fileName}.jpeg`);
         resolve(file);
       }, "image/jpeg", 0.5);
       return null;
     })
   }
 
-  async getPostureScore(): Promise<PostureScore | null> {
+  async postPosture(): Promise<void> {
     const file = await this.getFrameAsFile();
-    if (file === null) return null;
+    if (file === null) return;
+    const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
+    // if (!orientation || Object.values(orientation).some(v => v === null)) return;
 
-    const fd = new FormData();
-    fd.append("file", file);
-    return await (fetch("/api/score", {
-      method: "POST",
-      body: fd,
-    })
-    .then(res => res.json())
-    .catch(e => -1));
+    this.userIdSubscription = this.userFacade.user$.subscribe(user => {
+      const orientationWithUserId = {
+        userId: user.id,
+        alpha: orientation.alpha ?? -1,
+        beta: orientation.beta ?? -1,
+        gamma: orientation.gamma ?? -1
+      }
+      this.postureService.post(orientationWithUserId, file).subscribe(res => {
+        console.log(res)
+      })
+    });
   }
 
-  async calibrateNeckLength(): Promise<void> {
-    this.standardNeckLength = (await this.getPostureScore())?.neckLength ?? null;
-    console.log("standard: " + this.standardNeckLength);
-  }
+  async calibrate() {}
+
+  // async getPostureScore(): Promise<PostureScore | null> {
+  //   const file = await this.getFrameAsFile();
+  //   if (file === null) return null;
+
+  //   const fd = new FormData();
+  //   fd.append("file", file);
+  //   this.postureService.post()
+  // }
+
+  // async calibrateNeckLength(): Promise<void> {
+  //   this.userFacade.calibrate
+  //   console.log("standard: " + this.standardNeckLength);
+  // }
 }
