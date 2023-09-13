@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+import json
 
 class InternalPosture(BaseModel):
     user_id: int
@@ -17,6 +18,7 @@ class InternalPosture(BaseModel):
     created_at: datetime
 
 class InternalPostureOnlyOrientation(BaseModel):
+    user_id: int
     orientation_alpha: float
     orientation_beta: float
     orientation_gamma: float
