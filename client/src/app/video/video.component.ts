@@ -30,7 +30,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   openOverlay: boolean = true;
   allowPermission: boolean = false;
 
-  userIdSubscription: Subscription | undefined;
+  subscriptions: Subscription[] = [];
 
   constructor(private router: Router, private userFacade: UserFacade, private postureService: PostureService) {}
 
@@ -38,7 +38,7 @@ export class VideoComponent implements OnInit, OnDestroy {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
 
-      this.userFacade.loading$.subscribe(loading => {
+      const subscription = this.userFacade.loading$.subscribe(loading => {
         if (loading) return;
         this.userFacade.user$.subscribe(user => {
           if (user.id !== 0) return;
@@ -46,12 +46,13 @@ export class VideoComponent implements OnInit, OnDestroy {
             this.router.navigate(["/"]);
           }
         })
-      })
+      });
+      this.subscriptions.push(subscription)
   }
 
   ngOnDestroy(): void {
       this.videoEl?.removeEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
-      this.userIdSubscription?.unsubscribe();
+      this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
   async handleOnPlay(e: Event): Promise<void> {
@@ -128,7 +129,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
     // if (!orientation || Object.values(orientation).some(v => v === null)) return;
 
-    this.userIdSubscription = this.userFacade.user$.subscribe(user => {
+    const subscription = this.userFacade.user$.subscribe(user => {
       const orientationWithUserId = {
         userId: user.id,
         alpha: orientation.alpha ?? -1,
@@ -139,6 +140,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         console.log(res)
       })
     });
+    this.subscriptions.push(subscription);
   }
 
   async calibrate() {}
