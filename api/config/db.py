@@ -3,12 +3,10 @@ from sqlalchemy import create_engine, MetaData
 import os
 import time
 from dotenv import load_dotenv
+from config.env import user, password, db_name
 
 load_dotenv(".env")
 
-user = os.environ.get("MYSQL_USER")
-password = os.environ.get("MYSQL_PASSWORD")
-db_name = os.environ.get("MYSQL_DATABASE")
 host = 'mysql' # dockerのdbのサービス名 
 
 def connect_db(trial: int):
