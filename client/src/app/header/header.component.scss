@@ -5,7 +5,14 @@
 
     div {
         min-width: 20%;
+        max-width: 25%;
         display: flex;
+
+        p {
+            width: 100%;
+            font-size: medium;
+            word-wrap: break-word;
+        }
 
         button {
             justify-content: end;

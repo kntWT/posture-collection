@@ -1,10 +1,15 @@
 <mat-toolbar color="primary" class="toolbar">
-    <div></div>
+    <div *ngIf="isLoggedIn$ | async; else dummyName">
+        <p>{{ (user$ | async)?.name }}さん</p>
+    </div>
+    <ng-template #dummyName>
+        <div></div>
+    </ng-template>
     <p>姿勢矯正デモ</p>
-    <div *ngIf="isLoggedIn$ | async; else dummy">
+    <div *ngIf="isLoggedIn$ | async; else dummyBtn">
         <button (click)="handleLogout()">ログアウト</button>
     </div>
-    <ng-template #dummy>
+    <ng-template #dummyBtn>
         <div></div>
     </ng-template>
 </mat-toolbar>
