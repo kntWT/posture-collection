@@ -1,3 +1,11 @@
+@use "../../styles";
+
+#video {
+    height: 100vh - styles.$header-hight;
+    width: 100vw;
+    position: relative;
+}
+
 .video-frame {
     position: relative;
     text-align: center;
@@ -8,6 +16,9 @@
 }
 
 .ui-pannel {
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 16px;
     width: 100%;
     min-height: 50px;
     display: flex;

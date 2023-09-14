@@ -35,8 +35,9 @@ export class VideoComponent implements OnInit, OnDestroy {
   constructor(private router: Router, private userFacade: UserFacade, private postureService: PostureService) {}
 
   ngOnInit():void {
-      this.width = window.innerWidth;
-      this.height = window.innerHeight;
+      this.videoEl = document.getElementById("video") as HTMLVideoElement;
+      this.width = this.videoEl.clientWidth;
+      this.height = this.videoEl.clientHeight;
 
       const subscription = this.userFacade.loading$.subscribe(loading => {
         if (loading) return;
@@ -71,7 +72,6 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   async handleAllowPermission(): Promise<void> {
-    this.videoEl = document.getElementById("video") as HTMLVideoElement;
     if (this.videoEl === null) {
       console.log("failed to get video element");
       return
@@ -82,6 +82,7 @@ export class VideoComponent implements OnInit, OnDestroy {
             facingMode: "user",
             width: {min: 0, max: this.width},
             height: {min: 0, max: this.height},
+            aspectRatio: this.width / this.height,
         }
     });
     this.videoEl.srcObject = stream;
