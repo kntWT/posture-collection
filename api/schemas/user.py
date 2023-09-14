@@ -13,5 +13,8 @@ class UserPost(BaseModel):
     name: str
     password: str
 
-class UserPut(BaseModel):
+class UserCalibrateInternalPosture(BaseModel):
     neck_to_nose_standard: float
+
+class UserCalibrateExternalPosture(BaseModel):
+    neck_angle_offset: float
