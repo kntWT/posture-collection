@@ -10,6 +10,7 @@ from sqlalchemy import select, desc
 from typing import List
 from util import save_file
 from config.env import original_image_dir
+from util import JsonParser
 
 internal_posture = APIRouter(prefix="/internal-posture")
 
@@ -25,15 +26,18 @@ async def get_internal_posutres_by_user_id(user_id: int) -> List[InternalPosture
 async def get_internal_posture_by_id(id: int) -> InternalPosture:
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()
 
+parser = JsonParser(InternalPostureOnlyOrientation)
+
 @internal_posture.post("/")
 async def post_internal_posture_only_orientation(orientation: str = Body(...), file: UploadFile = File(...)) -> InternalPosture:
-    internal_posture_only_orientation: InternalPostureOnlyOrientation = json.loads(orientation)
+    internal_posture_only_orientation = parser(orientation)
     save_file(file)
     conn.execute(internal_posture_model.insert().values(
-        **internal_posture_only_orientation,
+        **internal_posture_only_orientation.dict(),
         image_path = f"{original_image_dir}/{file.filename}",
         created_at = datetime.now(JST)
     ))
+    conn.commit()
     return conn.execute(select(internal_posture_model).order_by(desc(internal_posture_model.c.created_at))).first()
 
 @internal_posture.put("/{id}")
@@ -41,4 +45,5 @@ async def update_estimation(internal_posture_only_estimation: InternalPostureOnl
     conn.execute(internal_posture_model.update().values(
         **internal_posture_only_estimation
     ).where(internal_posture_model.c.id==id))
+    conn.commit()
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()

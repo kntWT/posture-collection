@@ -24,9 +24,10 @@ async def get_external_posture_by_id(id: int) -> ExternalPosture:
 @external_posture.post("/")
 async def post_external_posture(external_posture: ExternalPosturePost) -> ExternalPosture:
     conn.execute(external_posture_model.insert().values(
-        **external_posture,
+        **external_posture.dict(),
         created_at = datetime.now(JST)
     ))
+    conn.commit()
     return conn.execute(select(external_posture_model).order_by(desc(external_posture_model.c.created_at))).first()
 
 @external_posture.put("/{id}")
@@ -34,4 +35,5 @@ async def update_internal_posture_id(id: int, external_posture: ExternalPostureP
     conn.execute(external_posture_model.update().values(
         **external_posture
     ).where(external_posture_model.c.id==id))
+    conn.commit()
     return conn.execute(select(external_posture_model).where(external_posture_model.c.id==id)).first()

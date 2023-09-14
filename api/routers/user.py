@@ -5,7 +5,7 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from models.user import user as user_model
 from config.db import conn
 from schemas.user import User, UserPost, UserPut
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from typing import List
 
 user = APIRouter(prefix="/user")
@@ -14,10 +14,11 @@ security = HTTPBasic()
 @user.post("/")
 async def create_user(user: UserPost) -> User:
     conn.execute(user_model.insert().values(
-        **user,
+        **user.dict(),
         created_at = datetime.now(JST)
     ))
-    return conn.execute(select(user_model).filter(user_model.c.id==user.id)).first()
+    conn.commit()
+    return conn.execute(select(user_model).order_by(desc(user_model.c.created_at))).first()
 
 @user.get("/auth/")
 async def auth_basic(credentials: HTTPBasicCredentials = Depends(security)):
@@ -32,10 +33,11 @@ async def auth_basic(credentials: HTTPBasicCredentials = Depends(security)):
             )
     else:
         return tmp_user._asdict()
+    
 
 @user.get("/")
 async def get_users() -> List[User]:
-    return conn.execute(select(user_model))
+    return conn.execute(select(user_model)).fetchall()
 
 @user.get("/{id}")
 async def get_user_by_id(id: int) -> User:
@@ -50,4 +52,5 @@ async def update_user_calibration(id: int, user: UserPut) -> User:
     conn.execute(user_model.update().values(
         neck_to_nose_standard = user.neck_to_nose_standard
     ).where(user_model.c.id==id))
+    conn.commit()
     return  conn.execute(select(user_model).filter(user_model.c.id==id)).first()
