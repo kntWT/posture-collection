@@ -1,7 +1,10 @@
+@use "../../styles";
+
 .toolbar {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    height: styles.$header-hight;
 
     div {
         min-width: 20%;
