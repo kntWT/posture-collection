@@ -4,7 +4,7 @@ import json
 
 class InternalPosture(BaseModel):
     user_id: int
-    image_path: str
+    file_name: str
     orientation_alpha: float
     orientation_beta: float
     orientation_gamma: float
