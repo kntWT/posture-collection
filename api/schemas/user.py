@@ -7,6 +7,7 @@ class User(BaseModel):
     name: str
     password: str
     neck_to_nose_standard: float | None
+    neck_angle_offset: float | None
     created_at: datetime
 
 class UserPost(BaseModel):
