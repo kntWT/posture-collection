@@ -28,7 +28,8 @@ export class VideoComponent implements OnInit, OnDestroy {
   isPlaying: boolean = true;
   deviceOrientationDetector: DeviceOrientationDetector | null = null;
   openOverlay: boolean = true;
-  allowPermission: boolean = false;
+  allowCameraPermission: boolean = false;
+  allowOrientationPermission: boolean = false;
 
   subscriptions: Subscription[] = [];
 
@@ -58,6 +59,8 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   async handleOnPlay(e: Event): Promise<void> {
     if (this.videoEl?.paused) return;
+    if (!this.isPlaying) return;
+    if (this.openOverlay) return;
     this.postPosture();
   }
 
@@ -71,7 +74,14 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.isPlaying = false;
   }
 
-  async handleAllowPermission(): Promise<void> {
+  handleOpenOverlay(): void {
+    this.openOverlay = !(this.allowCameraPermission && this.allowOrientationPermission);
+    if (this.openOverlay) {
+      this.handlePlay();
+    }
+  }
+
+  async handleAllowCameraPermission(): Promise<void> {
     if (this.videoEl === null) {
       console.log("failed to get video element");
       return
@@ -80,19 +90,26 @@ export class VideoComponent implements OnInit, OnDestroy {
         audio: false,
         video: {
             facingMode: "user",
-            width: {min: 0, max: this.width},
-            height: {min: 0, max: this.height},
-            aspectRatio: this.width / this.height,
+            width: this.width,
+            height: this.height,
+            aspectRatio: {
+              exact: this.height / this.width,
+            },
         }
     });
     this.videoEl.srcObject = stream;
     this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
-    this.videoEl?.play();
+    this.handlePause();
 
-    this.allowPermission = true;
+    this.allowCameraPermission = true;
+    this.handleOpenOverlay();
+  }
+
+  handleAllowOrientationPermission(): void {
     this.deviceOrientationDetector = new DeviceOrientationDetector();
-    
-    this.openOverlay = false;
+    this.deviceOrientationDetector.requestPermission();
+    this.allowOrientationPermission = true;
+    this.handleOpenOverlay()
   }
 
   getFrameAsFile(): Promise<File | null> {
@@ -127,6 +144,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   async postPosture(): Promise<void> {
     const file = await this.getFrameAsFile();
     if (file === null) return;
+
     const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
     // if (!orientation || Object.values(orientation).some(v => v === null)) return;
 

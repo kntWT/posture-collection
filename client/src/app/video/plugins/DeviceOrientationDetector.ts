@@ -15,6 +15,9 @@ export class DeviceOrientationDetector {
     updatedAt: Date | null = null;
 
     constructor(){
+    }
+
+    requestPermission() {
         const requestPermission = (DeviceOrientationEvent as unknown as DeviceOrientationEventiOS).requestPermission;
         const iOS = typeof requestPermission === 'function';
         if (iOS) {

@@ -1,4 +1,9 @@
+@use "../styles";
+
 app-header {
     position: sticky;
     top: 0;
+}
+router-outlet {
+    height: 100vh - styles.$header-hight;
 }

@@ -33,10 +33,17 @@
     cdkConnectedOverlay
     [cdkConnectedOverlayOrigin]="trigger"
     [cdkConnectedOverlayOpen]="openOverlay"
-    >
+>
     <div class="overlay">
-        <button (click)="handleAllowPermission()">
-            動作と方向へのアクセスを許可する
-        </button>
+        <div>
+            <button (click)="handleAllowCameraPermission()" [disabled]="allowCameraPermission">
+                カメラへのアクセスを許可する
+            </button>
+        </div>
+        <div>
+            <button (click)="handleAllowOrientationPermission()" [disabled]="allowOrientationPermission">
+                動作と方向へのアクセスを許可する
+            </button>
+        </div>
     </div>
 </ng-template>
