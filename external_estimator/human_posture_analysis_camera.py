@@ -6,9 +6,9 @@ import mediapipe as mp
 import requests
 from requests.exceptions import HTTPError
 from requests.auth import HTTPBasicAuth
-import base64
 from typing import Dict, NoReturn
 import json
+import datetime
 
 
 # Calculate distance
@@ -234,6 +234,9 @@ if __name__ == "__main__":
         post(neck_inclination)
         # Display.
         cv2.imshow('MediaPipe Pose', image)
+        now = datetime.datetime.now()
+        file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
+        cv2.imwrite(f"images/{file_name}.jpeg", image)
         if cv2.waitKey(5) & 0xFF == ord('q'):
             break
 
