@@ -9,9 +9,11 @@ import copy
 import random
 import string
 from sixdrepnet import SixDRepNet
-from config.env import image_dir, original_image_dir
 import requests
 from requests.exceptions import HTTPError
+import asyncio
+
+from config.env import image_dir, original_image_dir
 
 API_URL = "http://localhost:4201"
 
@@ -89,8 +91,7 @@ async def calc_head_angle(img=None) -> Dict | None:
         "roll": roll
     }
     
-if __name__ == "__main__":
-    file_name: str = sys.argv[1]
+async def update_estimation(file_name: str):
     id: int = -1
     try:
         get_id = requests.get(f"{API_URL}/internal-posture/filename/{file_name}")
@@ -100,8 +101,10 @@ if __name__ == "__main__":
         raise e
     try:
         image = cv2.imread(f"{original_image_dir}/{file_name}")
-        face_feature = calc_neck_dist(image)
-        head_pose = calc_head_angle(image)
+        tasks: List[Any] = []
+        tasks.append(calc_neck_dist(image))
+        tasks.append(calc_head_angle(image))
+        face_feature, head_pose = await asyncio.gather(*tasks)
         if face_feature is None or head_pose is None:
             pass
         else:
@@ -109,3 +112,6 @@ if __name__ == "__main__":
             print(put_feature.json())
     except FileNotFoundError as e:
         print(e)
+
+if __name__ == "__main__":
+    update_estimation(sys.argv[1])
