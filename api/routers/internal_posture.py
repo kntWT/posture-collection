@@ -31,10 +31,10 @@ parser = JsonParser(InternalPostureOnlyOrientation)
 @internal_posture.post("/")
 async def post_internal_posture_only_orientation(orientation: str = Body(...), file: UploadFile = File(...)) -> InternalPosture:
     internal_posture_only_orientation = parser(orientation)
-    save_file(file)
+    file_name: str = save_file(file)
     conn.execute(internal_posture_model.insert().values(
         **internal_posture_only_orientation.dict(),
-        image_path = f"{original_image_dir}/{file.filename}",
+        image_path = file_name,
         created_at = datetime.now(JST)
     ))
     conn.commit()
