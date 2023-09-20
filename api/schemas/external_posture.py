@@ -11,6 +11,7 @@ class ExternalPosture(BaseModel):
 class ExternalPosturePost(BaseModel):
     user_id: int
     neck_angle: float
+    created_at: datetime
 
 class ExternalPosturePut(BaseModel):
     internal_posture_id: int

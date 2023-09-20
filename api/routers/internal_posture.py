@@ -1,6 +1,4 @@
 from fastapi import File, UploadFile, Body
-from .jst import JST
-import json
 from datetime import datetime
 from fastapi import APIRouter
 from models.internal_posture import internal_posture as internal_posture_model
@@ -38,7 +36,6 @@ async def post_internal_posture_only_orientation(orientation: str = Body(...), f
     conn.execute(internal_posture_model.insert().values(
         **internal_posture_only_orientation.dict(),
         file_name = file.filename,
-        created_at = datetime.now(JST)
     ))
     conn.commit()
     return conn.execute(select(internal_posture_model).order_by(desc(internal_posture_model.c.created_at))).first()

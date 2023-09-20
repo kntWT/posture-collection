@@ -63,10 +63,10 @@ def calibrate(offset) -> NoReturn:
     finally:
         return
 
-def post(neck_angle: float) -> NoReturn:
+def post(neck_angle: float, now: datetime) -> NoReturn:
     if len(user) <= 0:
         return
-    data = json.dumps({"user_id": user["id"], "neck_angle": neck_angle})
+    data = json.dumps({"user_id": user["id"], "neck_angle": neck_angle, "created_at": now})
     try:
         res = requests.post(f"{API_URL}/external-posture/", data)
         res.raise_for_status()
@@ -231,10 +231,10 @@ if __name__ == "__main__":
         if bad_time > 180:
             sendWarning()
 
-        post(neck_inclination)
+        now = datetime.datetime.now()
+        post(neck_inclination, now)
         # Display.
         cv2.imshow('MediaPipe Pose', image)
-        now = datetime.datetime.now()
         file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
         cv2.imwrite(f"images/{file_name}.jpeg", image)
         if cv2.waitKey(5) & 0xFF == ord('q'):

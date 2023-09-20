@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-import json
 
 class InternalPosture(BaseModel):
     id: int
@@ -23,6 +22,7 @@ class InternalPostureOnlyOrientation(BaseModel):
     orientation_alpha: float = Field(alias="alpha")
     orientation_beta: float = Field(alias="beta")
     orientation_gamma: float = Field(alias="gamma")
+    created_at: datetime = Field(alias="createdAt")
 
 class InternalPostureOnlyEstimation(BaseModel):
     pitch: float

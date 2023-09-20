@@ -15,7 +15,7 @@ export class PostureService {
 
 	private endpoint = `${environment.API_ENDPOINT}internal-posture`;
 
-    post(orientationWithUserId: OrientationWithUserId, file: File) {
+    post(orientationWithUserId:( OrientationWithUserId & {createdAt: Date}), file: File) {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("orientation", JSON.stringify(orientationWithUserId))

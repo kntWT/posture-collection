@@ -112,7 +112,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.handleOpenOverlay()
   }
 
-  getFrameAsFile(): Promise<File | null> {
+  getFrameAsFile(now: Date): Promise<File | null> {
     return new Promise((resolve, reject) => {
       if (this.videoEl === null || this.videoEl.paused || this.videoEl.ended) {
         return null;
@@ -130,7 +130,7 @@ export class VideoComponent implements OnInit, OnDestroy {
           return;
         }
         
-        const fileName: string = this.dateFormat(new Date())
+        const fileName: string = this.dateFormat(now)
           .replaceAll("/", "-")
           .replaceAll(" ", "_");
         file = new File([blob], `${fileName}.jpeg`);
@@ -146,7 +146,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   async postPosture(): Promise<void> {
     const now = new Date();
-    const file = await this.getFrameAsFile();
+    const file = await this.getFrameAsFile(now);
     if (file === null) return;
 
     const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
@@ -157,7 +157,8 @@ export class VideoComponent implements OnInit, OnDestroy {
         userId: user.id,
         alpha: orientation.alpha ?? -1,
         beta: orientation.beta ?? -1,
-        gamma: orientation.gamma ?? -1
+        gamma: orientation.gamma ?? -1,
+        createdAt: now
       }
       this.postureService.post(orientationWithUserId, file).subscribe(res => {
         console.log(res)
