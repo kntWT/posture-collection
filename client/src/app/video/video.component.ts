@@ -130,18 +130,22 @@ export class VideoComponent implements OnInit, OnDestroy {
           return;
         }
         
-        const now = new Date();
-        const fileName: string = `${now.toLocaleString("ja-JP-u-ca-japanese")}:${now.getMilliseconds()}`
-          .replaceAll("/", "_")
+        const fileName: string = this.dateFormat(new Date())
+          .replaceAll("/", "-")
           .replaceAll(" ", "_");
         file = new File([blob], `${fileName}.jpeg`);
         resolve(file);
-      }, "image/jpeg", 0.5);
+      }, "image/jpeg", 0.8);
       return null;
     })
   }
 
+  dateFormat(date: Date):string {
+    return `${date.toLocaleString("jp")}.${date.getMilliseconds()}`
+  }
+
   async postPosture(): Promise<void> {
+    const now = new Date();
     const file = await this.getFrameAsFile();
     if (file === null) return;
 
