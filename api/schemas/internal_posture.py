@@ -22,7 +22,7 @@ class InternalPostureOnlyOrientation(BaseModel):
     orientation_alpha: float = Field(alias="alpha")
     orientation_beta: float = Field(alias="beta")
     orientation_gamma: float = Field(alias="gamma")
-    created_at: datetime = Field(alias="createdAt")
+    created_at: datetime | str = Field(alias="createdAt")
 
 class InternalPostureOnlyEstimation(BaseModel):
     pitch: float

@@ -66,7 +66,7 @@ def calibrate(offset) -> NoReturn:
 def post(neck_angle: float, now: datetime) -> NoReturn:
     if len(user) <= 0:
         return
-    data = json.dumps({"user_id": user["id"], "neck_angle": neck_angle, "created_at": now})
+    data = json.dumps({"user_id": user["id"], "neck_angle": neck_angle, "created_at": now.strftime("%Y-%m-%d %H:%M:%S.%f")})
     try:
         res = requests.post(f"{API_URL}/external-posture/", data)
         res.raise_for_status()

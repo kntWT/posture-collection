@@ -138,7 +138,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   dateFormat(date: Date):string {
-    return `${date.toLocaleString("jp")}.${date.getMilliseconds()}`
+    return `${date.toLocaleString("jp-JP", {timeZone: "Asia/Tokyo"})}.${date.getMilliseconds()}`
   }
 
   async postPosture(): Promise<void> {
@@ -155,7 +155,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         alpha: orientation.alpha ?? -1,
         beta: orientation.beta ?? -1,
         gamma: orientation.gamma ?? -1,
-        createdAt: now
+        createdAt: this.dateFormat(now)
       }
       this.postureService.post(orientationWithUserId, file).subscribe(res => {
         console.log(res)
