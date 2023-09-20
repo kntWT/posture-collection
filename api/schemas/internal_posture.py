@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 
 class InternalPosture(BaseModel):
+    id: int
     user_id: int
     file_name: str
     orientation_alpha: float
