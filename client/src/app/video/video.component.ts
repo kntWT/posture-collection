@@ -86,15 +86,12 @@ export class VideoComponent implements OnInit, OnDestroy {
       console.log("failed to get video element");
       return
     }
+    const ua = navigator.userAgent;
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
         video: {
             facingMode: "user",
-            width: this.width,
-            height: this.height,
-            aspectRatio: {
-              exact: this.height / this.width,
-            },
+            width: {min: 0, max: this.width},
         }
     });
     this.videoEl.srcObject = stream;
@@ -119,8 +116,8 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
 
       const canvas = document.createElement("canvas");
-      canvas.width = this.videoEl.videoWidth * 2;
-      canvas.height = this.videoEl.videoHeight * 2;
+      canvas.width = this.videoEl.videoWidth;
+      canvas.height = this.videoEl.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx?.drawImage(this.videoEl, 0, 0, canvas.width, canvas.height);
       let file: File | null = null;

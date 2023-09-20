@@ -1,9 +1,10 @@
 @use "../../styles";
 
 #video {
-    height: 100vh - styles.$header-hight;
+    height: 100svh - styles.$header-hight;
     width: 100vw;
     position: relative;
+    object-fit: contain;
 }
 
 .video-frame {
@@ -18,7 +19,7 @@
 .ui-pannel {
     position: absolute;
     bottom: 0;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
     width: 100%;
     min-height: 50px;
     display: flex;
@@ -27,7 +28,7 @@
 
 .overlay {
     width: 100vw;
-    height: 100vh;
+    height: 100lvh;
     background: white;
     opacity: 1;
     display: flex;
