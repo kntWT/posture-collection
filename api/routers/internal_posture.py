@@ -44,9 +44,9 @@ async def post_internal_posture_only_orientation(orientation: str = Body(...), f
     return conn.execute(select(internal_posture_model).order_by(desc(internal_posture_model.c.created_at))).first()
 
 @internal_posture.put("/{id}")
-async def update_estimation(internal_posture_only_estimation: InternalPostureOnlyEstimation) -> InternalPosture:
+async def update_estimation(id: int, internal_posture_only_estimation: InternalPostureOnlyEstimation) -> InternalPosture:
     conn.execute(internal_posture_model.update().values(
-        **internal_posture_only_estimation
+        **internal_posture_only_estimation.dict()
     ).where(internal_posture_model.c.id==id))
     conn.commit()
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()
