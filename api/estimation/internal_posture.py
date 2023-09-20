@@ -4,7 +4,7 @@ import math
 import torch
 import sys
 import os
-from typing import List, Dict, NoReturn
+from typing import List, Dict, NoReturn, Any
 import copy
 import random
 import string
@@ -12,10 +12,13 @@ from sixdrepnet import SixDRepNet
 import requests
 from requests.exceptions import HTTPError
 import asyncio
+import json
 
 from config.env import image_dir, original_image_dir
 
 API_URL = "http://localhost:4201"
+_image_dir = image_dir if image_dir is not None else "images"
+_original_image_dir: str = original_image_dir if original_image_dir is not None else "images/original"
 
 Point = Dict[str, float]
 # x: x_coord
@@ -52,7 +55,7 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     right_eye_index: int = int(subset[0][14])
     left_eye_index: int = int(subset[0][15])
     if nose_index == -1 or neck_index == -1 or right_eye_index == -1 or left_eye_index == -1:
-        print("nose or neck cannot detected")
+        print("nose or neck or eyes cannot detected")
         return None
     
     nose: Point = parse_point(candidate[nose_index])
@@ -63,7 +66,7 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     canvas: np.ndarray = copy.deepcopy(img)
     canvas = util.draw_bodypose(canvas, candidate, subset)
-    cv2.imwrite(f"images/neck/{nose['score']}_{neck['score']}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
+    cv2.imwrite(f"{_image_dir}/neck/{nose['score']}_{neck['score']}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
     if nose["score"] < 0.5 or \
         neck["score"] < 0.1 or \
         right_eye["score"] < 0.4 or \
@@ -74,8 +77,10 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     neck_to_nose: float = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     standard_dist: float = math.dist([right_eye["x"], right_eye["y"]], [left_eye["x"], left_eye["y"]])
     return {
-        "neck_to_nose": neck_to_nose,
-        "standard_dist": standard_dist
+        "nose_x": nose["x"],
+        "nose_y": nose["y"],
+        "neck_to_nose": float(neck_to_nose),
+        "standard_dist": float(standard_dist)
     }
 
 async def calc_head_angle(img=None) -> Dict | None:
@@ -84,11 +89,11 @@ async def calc_head_angle(img=None) -> Dict | None:
     pitch, yaw, roll = map(lambda x: x[0], head_pose_model.predict(img))
     canvas: np.ndarray = copy.deepcopy(img)
     head_pose_model.draw_axis(canvas, pitch, yaw, roll)
-    cv2.imwrite(f"{image_dir}/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
+    cv2.imwrite(f"{_image_dir}/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
     return {
-        "pitch": pitch,
-        "yaw": yaw,
-        "roll": roll
+        "pitch": float(pitch),
+        "yaw": float(yaw),
+        "roll": float(roll)
     }
     
 async def update_estimation(file_name: str):
@@ -100,7 +105,7 @@ async def update_estimation(file_name: str):
     except HTTPError as e:
         raise e
     try:
-        image = cv2.imread(f"{original_image_dir}/{file_name}")
+        image = cv2.imread(f"{_original_image_dir}/{file_name}")
         tasks: List[Any] = []
         tasks.append(calc_neck_dist(image))
         tasks.append(calc_head_angle(image))
@@ -108,8 +113,8 @@ async def update_estimation(file_name: str):
         if face_feature is None or head_pose is None:
             pass
         else:
-            put_feature = requests.put(f"{API_URL}/internal-posutre/{id}", {**face_feature, **head_pose})
-            print(put_feature.json())
+            put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
+            put_feature.raise_for_status()
     except FileNotFoundError as e:
         print(e)
 
