@@ -99,12 +99,18 @@ async def calc_head_angle(img=None) -> Dict | None:
 async def update_estimation(file_name: str):
     id: int = -1
     try:
-        get_id = requests.get(f"{API_URL}/internal-posture/filename/{file_name}")
-        get_id.raise_for_status()
-        id = get_id.json()["id"]
+        get_row = requests.get(f"{API_URL}/internal-posture/filename/{file_name}")
+        get_row.raise_for_status()
+        data = get_row.json()
+        id: int = data["id"]
+        user_id: int = data["user_id"]
+        calibrate_flag: bool = data["calibrate_flag"]
     except HTTPError as e:
-        raise e
+        print(e)
+        return
     try:
+        if id == -1:
+            return
         image = cv2.imread(f"{_original_image_dir}/{file_name}")
         tasks: List[Any] = []
         tasks.append(calc_neck_dist(image))
@@ -115,6 +121,12 @@ async def update_estimation(file_name: str):
         else:
             put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
             put_feature.raise_for_status()
+            if calibrate_flag:
+                calibrate_user = requests.put(
+                    f"{API_URL}/user/calibration/internal-posture/{user_id}",
+                    json.dumps({"neck_to_nose_standard": face_feature["neck_to_nose"]})
+                )
+                calibrate_user.raise_for_status()
     except FileNotFoundError as e:
         print(e)
 

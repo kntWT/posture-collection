@@ -15,6 +15,7 @@ class InternalPosture(BaseModel):
     nose_y: float | None
     neck_to_nose: float | None
     standard_dist: float | None
+    calibrate_flag: bool
     created_at: datetime
 
 class InternalPostureOnlyOrientation(BaseModel):
@@ -22,6 +23,7 @@ class InternalPostureOnlyOrientation(BaseModel):
     orientation_alpha: float = Field(alias="alpha")
     orientation_beta: float = Field(alias="beta")
     orientation_gamma: float = Field(alias="gamma")
+    calibrate_flag: bool = Field(alias="calibrateFlag")
     created_at: datetime | str = Field(alias="createdAt")
 
 class InternalPostureOnlyEstimation(BaseModel):

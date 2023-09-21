@@ -31,6 +31,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   allowCameraPermission: boolean = false;
   allowOrientationPermission: boolean = false;
 
+  calibrateFlag: boolean = false;
   subscriptions: Subscription[] = [];
 
   constructor(private router: Router, private userFacade: UserFacade, private postureService: PostureService) {}
@@ -155,16 +156,21 @@ export class VideoComponent implements OnInit, OnDestroy {
         alpha: orientation.alpha ?? -1,
         beta: orientation.beta ?? -1,
         gamma: orientation.gamma ?? -1,
+        calibrateFlag: this.calibrateFlag,
         createdAt: this.dateFormat(now)
       }
-      this.postureService.post(orientationWithUserId, file).subscribe(res => {
-        console.log(res)
-      })
+      this.postureService.post(orientationWithUserId, file)
+        .subscribe(res => {
+          console.log(res)
+        });
+      this.calibrateFlag = false;
     });
     this.subscriptions.push(subscription);
   }
 
-  async calibrate() {}
+  calibrate(): void {
+    this.calibrateFlag = true;
+  }
 
   // async getPostureScore(): Promise<PostureScore | null> {
   //   const file = await this.getFrameAsFile();

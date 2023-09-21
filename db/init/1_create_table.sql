@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS internal_postures (
     nose_y DOUBLE,
     neck_to_nose DOUBLE,
     standard_dist DOUBLE,
+    calibrate_flag BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 );
 

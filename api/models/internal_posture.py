@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy.sql.sqltypes import Integer, DOUBLE, TIMESTAMP, String
+from sqlalchemy.sql.sqltypes import Integer, DOUBLE, TIMESTAMP, String, BOOLEAN
 from sqlalchemy.sql.functions import current_timestamp
 from config.db import meta, engine
 
@@ -18,6 +18,7 @@ internal_posture = Table(
     Column('nose_y', DOUBLE),
     Column('neck_to_nose', DOUBLE),
     Column('standard_dist', DOUBLE),
+    Column('calibrate_flag', BOOLEAN, server_default="False"),
     Column('created_at', TIMESTAMP, server_default=current_timestamp())
 )
 
