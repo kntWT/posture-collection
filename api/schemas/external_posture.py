@@ -4,7 +4,6 @@ from datetime import datetime
 class ExternalPosture(BaseModel):
     id: int
     user_id: int
-    internal_posture_id: int | None
     neck_angle: float
     created_at: datetime
 

@@ -9,7 +9,7 @@ user = Table(
     Column('name', String(255), nullable=False),
     Column('password', String(255), nullable=False),
     Column('neck_to_nose_standard', DOUBLE),
-    Column('neck_angle_offset', DOUBLE),
+    Column('neck_angle_offset', DOUBLE, nullable=False, server_default="0"),
     Column('created_at', TIMESTAMP, server_default=current_timestamp())
 )
 

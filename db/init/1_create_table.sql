@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     password TEXT NOT NULL,
     neck_to_nose_standard DOUBLE,
-    neck_angle_offset DOUBLE,
+    neck_angle_offset DOUBLE NOT NULL DEFAULT 0,
     created_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 );
 
@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS internal_postures (
 CREATE TABLE IF NOT EXISTS external_postures (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL DEFAULT 1,
-    internal_posture_id INT,
     neck_angle DOUBLE NOT NULL,
     created_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 );
