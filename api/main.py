@@ -1,8 +1,11 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, status, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from routers.user import user
 from routers.internal_posture import internal_posture
 from routers.external_posture import external_posture
+from routers.all_feature import all_feature
 import cv2
 import asyncio
 # from demo_image import calc_neck_dist, calc_head_angle, save_file, remove_file
@@ -30,12 +33,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(RequestValidationError)
+async def handler(request:Request, exc:RequestValidationError):
+    print(exc)
+    return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
 
 @app.get("/")
 def get_hello_world():
     return {"Hello": "World"}
 
-routers_list = [user, internal_posture, external_posture]
+routers_list = [user, internal_posture, external_posture, all_feature]
 
 for router in routers_list:
     app.include_router(router)
