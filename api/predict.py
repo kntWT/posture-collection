@@ -32,9 +32,11 @@ def fetch_data():
     x = []
     y = []
     for d in data:
-        neck_dist_ratio = d["neck_to_nose"] / d["neck_to_nose_standard"]
+        neck_to_nose = d["neck_to_nose"]
         standard_dist = d["standard_dist"]
-        normalized_ratio = neck_dist_ratio / standard_dist
+        normalized_dist = neck_to_nose / standard_dist
+        neck_to_nose_standard = d["neck_to_nose_standard"]
+        normalized_ratio = normalized_dist / neck_to_nose_standard
         alpha = d["orientation_alpha"]
         beta = d["orientation_beta"]
         gamma = d["orientation_gamma"]

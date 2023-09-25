@@ -121,10 +121,11 @@ async def update_estimation(file_name: str):
         else:
             put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
             put_feature.raise_for_status()
+            neck_to_nose_standard = face_feature["neck_to_nose"] / face_feature["standard_dist"]
             if calibrate_flag:
                 calibrate_user = requests.put(
                     f"{API_URL}/user/calibration/internal-posture/{user_id}",
-                    json.dumps({"neck_to_nose_standard": face_feature["neck_to_nose"]})
+                    json.dumps({"neck_to_nose_standard": neck_to_nose_standard})
                 )
                 calibrate_user.raise_for_status()
     except FileNotFoundError as e:

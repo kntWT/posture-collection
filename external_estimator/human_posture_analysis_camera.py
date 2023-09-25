@@ -232,11 +232,11 @@ if __name__ == "__main__":
             sendWarning()
 
         now = datetime.datetime.now()
-        post(neck_inclination, now)
+        # post(neck_inclination, now)
         # Display.
         cv2.imshow('MediaPipe Pose', image)
         file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
-        cv2.imwrite(f"images/{file_name}.jpeg", image)
+        # cv2.imwrite(f"images/{file_name}.jpeg", image)
         if cv2.waitKey(5) & 0xFF == ord('q'):
             break
 
