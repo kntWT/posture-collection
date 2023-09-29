@@ -94,6 +94,8 @@ light_green = (127, 233, 100)
 yellow = (0, 255, 255)
 pink = (255, 0, 255)
 
+expand_offset = 400
+
 # Initialize mediapipe pose class.
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
@@ -173,13 +175,13 @@ if __name__ == "__main__":
 
         # Let's take y - coordinate of P3 100px above x1,  for display elegance.
         # Although we are taking y = 0 while calculating angle between P1,P2,P3.
-        cv2.circle(image, (l_shldr_x, l_shldr_y - 100), 7, yellow, -1)
+        cv2.circle(image, (l_shldr_x, l_shldr_y - expand_offset), 7, yellow, -1)
         cv2.circle(image, (r_shldr_x, r_shldr_y), 7, pink, -1)
         cv2.circle(image, (l_hip_x, l_hip_y), 7, yellow, -1)
 
         # Similarly, here we are taking y - coordinate 100px above x1. Note that
         # you can take any value for y, not necessarily 100 or 200 pixels.
-        cv2.circle(image, (l_hip_x, l_hip_y - 100), 7, yellow, -1)
+        cv2.circle(image, (l_hip_x, l_hip_y - expand_offset), 7, yellow, -1)
 
         # Put text, Posture and angle inclination.
         # Text string for display.
@@ -197,9 +199,9 @@ if __name__ == "__main__":
 
             # Join landmarks.
             cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), green, 4)
-            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - 100), green, 4)
+            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), green, 4)
             cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), green, 4)
-            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - 100), green, 4)
+            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), green, 4)
 
         else:
             good_frames = 0
@@ -211,9 +213,9 @@ if __name__ == "__main__":
 
             # Join landmarks.
             cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), red, 4)
-            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - 100), red, 4)
+            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), red, 4)
             cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), red, 4)
-            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - 100), red, 4)
+            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), red, 4)
 
         # Calculate the time of remaining in a particular posture.
         good_time = (1 / fps) * good_frames
