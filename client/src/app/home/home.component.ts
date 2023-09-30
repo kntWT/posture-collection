@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {}
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.removeAllSubscriptions();
   }
 
   handleLogin(userBasicInfo: UserBasicInfo) {
@@ -51,7 +51,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (isLoggedIn) {
           this.router.navigate([path]);
         } else {
-          alert(errorMessage)
+          alert(errorMessage);
+          this.removeAllSubscriptions();
         }
       });
       this.subscriptions.push(isLoggedInSubscription);
@@ -59,6 +60,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subscriptions.push(loadingSubscription);
   }
 
-  
+  removeAllSubscriptions() {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.subscriptions = [];
+  }  
 
 }

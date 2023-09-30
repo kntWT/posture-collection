@@ -47,6 +47,7 @@ export class VideoComponent implements OnInit, OnDestroy {
           if (user.id !== 0) return;
           if (alert("ログインしてから再度アクセスしてください．") === undefined) {
             this.router.navigate(["/"]);
+            this.removeAllSubscriptions();
           }
         })
       });
@@ -55,7 +56,12 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
       this.videoEl?.removeEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
-      this.subscriptions.forEach(subscription => subscription.unsubscribe());
+      this.removeAllSubscriptions();
+  }
+
+  removeAllSubscriptions() {
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.subscriptions = [];
   }
 
   async handleOnPlay(e: Event): Promise<void> {

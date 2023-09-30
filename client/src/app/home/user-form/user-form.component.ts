@@ -26,7 +26,7 @@ export class UserFormComponent implements OnInit {
   @Input() title: string = "";
   @Output() submitEvent = new EventEmitter<UserBasicInfo>();
 
-  handleSubmit(userName: string, password: string): void {
+  handleSubmit(): void {
     if (this.form.invalid) {
       alert("情報が不足しています");
       return;
