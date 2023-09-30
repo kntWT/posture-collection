@@ -1,6 +1,8 @@
 import { Component, EventEmitter, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { Output, Input } from '@angular/core';
 
 import { UserBasicInfo } from 'src/app/types/User';
@@ -10,7 +12,7 @@ import { UserBasicInfo } from 'src/app/types/User';
   templateUrl: './user-form.component.html',
   styleUrls: ['./user-form.component.scss'],
   standalone: true,
-  imports: [MatButtonModule, ReactiveFormsModule],
+  imports: [MatButtonModule, MatInputModule, MatFormFieldModule, ReactiveFormsModule],
 })
 export class UserFormComponent implements OnInit {
 
@@ -24,7 +26,7 @@ export class UserFormComponent implements OnInit {
   @Input() title: string = "";
   @Output() submitEvent = new EventEmitter<UserBasicInfo>();
 
-  handleSubmit(): void {
+  handleSubmit(userName: string, password: string): void {
     if (this.form.invalid) {
       alert("情報が不足しています");
       return;

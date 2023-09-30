@@ -7,7 +7,7 @@
     </ng-template>
     <p>姿勢矯正デモ</p>
     <div *ngIf="isLoggedIn$ | async; else dummyBtn">
-        <button (click)="handleLogout()">ログアウト</button>
+        <button mat-raised-button color="primary" (click)="handleLogout()">ログアウト</button>
     </div>
     <ng-template #dummyBtn>
         <div></div>

@@ -1,6 +1,7 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, numberAttribute } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
 import { UserFacade } from '../store/user/facade';
 import { Observable } from 'rxjs';
 import { User } from '../types/User';
@@ -10,7 +11,7 @@ import { User } from '../types/User';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [MatToolbarModule, NgIf, CommonModule],
+  imports: [MatToolbarModule, MatButtonModule, NgIf, CommonModule],
 })
 export class HeaderComponent {
   isLoggedIn$: Observable<boolean>;

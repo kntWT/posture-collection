@@ -1,3 +1,27 @@
-form div,h4{
+@use 'sass:map';
+@use "@angular/material" as mat;
+@import "@angular/material/theming";
+@import "../../../theme/deeppurple-amber";
+
+@mixin marker($theme) {
+    $color-config: mat.get-color-config($theme);
+    $accent-color: map.get($color-config, "accent");
+
+    background: linear-gradient(
+        to bottom,
+        transparent 0 40%,
+        mat-color($accent-color) 50% 100%
+    );
+}
+
+form div {
     margin-top: 8px;
+    text-align: center;
+}
+
+h4 {
+    margin: 16px auto;
+    width: 50%;
+    text-align: center;
+    @include marker($theme);
 }

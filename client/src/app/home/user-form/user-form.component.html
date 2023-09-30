@@ -1,16 +1,17 @@
 <div class="pa-3">
     <form [formGroup]="form">
         <h4>{{ title }}</h4>
-        <div>
-            <label>ユーザー名</label>
-            <input type="text" formControlName="name">
-        </div>
-        <div>
-            <label>パスワード</label>
-            <input type="password" formControlName="password">
-        </div>
+        <mat-form-field>
+            <mat-label>ユーザネーム</mat-label>
+            <input matInput required #userName>
+        </mat-form-field>
+        
+        <mat-form-field>
+            <mat-label>パスワード</mat-label>
+            <input matInput required #password>
+        </mat-form-field>
     </form>
-    <button class="my-3">
-        <a mat-button (click)="handleSubmit()">{{title}}</a>
+    <button mat-raised-button color="primary" (click)="handleSubmit(userName.value, password.value)" class="my-3">
+        {{title}}
     </button>
 </div>

@@ -4,8 +4,13 @@
         <mat-divider class="my-2" />
         <app-user-form (submitEvent)="handleSignup($event)" [title]="'ユーザ登録'" />
         <mat-divider class="my-2" />
-        <button class="btn">
-            <a mat-button (click)="handleLoginAsGuest()">ゲストユーザとしてログイン</a>
+        <button
+            class="btn"
+            mat-raised-button
+            color="primary"
+            (click)="handleLoginAsGuest()"
+        >
+            ゲストユーザとしてログイン
         </button>
     </mat-card>
 </div>

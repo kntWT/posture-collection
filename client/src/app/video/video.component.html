@@ -36,12 +36,24 @@
 >
     <div class="overlay">
         <div>
-            <button (click)="handleAllowCameraPermission()" [disabled]="allowCameraPermission">
+            <button 
+                mat-raised-button
+                color="primary"
+                (click)="handleAllowCameraPermission()"
+                [disabled]="allowCameraPermission"
+                class="my-4"
+            >
                 カメラへのアクセスを許可する
             </button>
         </div>
         <div>
-            <button (click)="handleAllowOrientationPermission()" [disabled]="allowOrientationPermission">
+            <button
+                mat-raised-button
+                color="primary"
+                (click)="handleAllowOrientationPermission()"
+                [disabled]="allowOrientationPermission"
+                class="my-4"
+            >
                 動作と方向へのアクセスを許可する
             </button>
         </div>
