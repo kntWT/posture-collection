@@ -45,7 +45,7 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     right_eye_index: int = int(subset[0][14])
     left_eye_index: int = int(subset[0][15])
     if nose_index == -1 or neck_index == -1 or right_eye_index == -1 or left_eye_index == -1:
-        print("nose or neck or eyes cannot detected")
+        print(f"nose({nose_index}) or neck({neck_index}) or eyes([{right_eye_index}, {left_eye_index}]) cannot detected")
         return None
     
     nose: Point = parse_point(candidate[nose_index])
