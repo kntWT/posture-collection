@@ -9,10 +9,13 @@ contourpy==1.1.0
 cryptography==41.0.3
 cycler==0.11.0
 exceptiongroup==1.1.2
+face-detection @ git+https://github.com/elliottzheng/face-detection.git@786fbab7095623c348e251f1f0a8b323721c6a84
 fastapi==0.100.0
 filelock==3.12.2
 fonttools==4.40.0
+fsspec==2023.9.2
 h11==0.14.0
+huggingface-hub==0.17.3
 idna==3.4
 imageio==2.31.1
 Jinja2==3.1.2
@@ -37,6 +40,7 @@ python-dotenv==1.0.0
 python-multipart==0.0.6
 pytz==2023.3
 PyWavelets==1.4.1
+PyYAML==6.0.1
 requests==2.31.0
 scikit-image==0.21.0
 scipy==1.11.1
