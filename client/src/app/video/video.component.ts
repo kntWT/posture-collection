@@ -159,9 +159,9 @@ export class VideoComponent implements OnInit, OnDestroy {
     const subscription = this.userFacade.user$.subscribe(user => {
       const orientationWithUserId = {
         userId: user.id,
-        alpha: orientation.alpha ?? -1,
-        beta: orientation.beta ?? -1,
-        gamma: orientation.gamma ?? -1,
+        alpha: orientation.alpha,
+        beta: orientation.beta,
+        gamma: orientation.gamma,
         calibrateFlag: this.calibrateFlag,
         createdAt: this.dateFormat(now)
       }

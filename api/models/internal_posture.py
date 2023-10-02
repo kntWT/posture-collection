@@ -16,6 +16,8 @@ internal_posture = Table(
     Column('roll', DOUBLE),
     Column('nose_x', DOUBLE),
     Column('nose_y', DOUBLE),
+    Column('neck_x', DOUBLE),
+    Column('neck_y', DOUBLE),
     Column('neck_to_nose', DOUBLE),
     Column('standard_dist', DOUBLE),
     Column('calibrate_flag', BOOLEAN, server_default="False"),
