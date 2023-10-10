@@ -167,7 +167,8 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
       this.postureService.post(orientationWithUserId, file)
         .subscribe(res => {
-          console.log(res)
+          console.log(res);
+          this.removeAllSubscriptions();
         });
       this.calibrateFlag = false;
     });
