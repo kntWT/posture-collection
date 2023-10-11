@@ -50,7 +50,8 @@ async def get_guest_user() -> User:
 @user.put("/calibration/internal-posture/{id}")
 async def update_user_calibration(id: int, user: UserCalibrateInternalPosture) -> User:
     conn.execute(user_model.update().values(
-        neck_to_nose_standard = user.neck_to_nose_standard
+        # neck_to_nose_standard = user.neck_to_nose_standard
+        **user.dict()
     ).where(user_model.c.id==id))
     conn.commit()
     return  conn.execute(select(user_model).filter(user_model.c.id==id)).first()

@@ -30,7 +30,7 @@ async def post_external_posture(external_posture: ExternalPosturePost) -> Extern
 @external_posture.put("/{id}")
 async def update_internal_posture_id(id: int, external_posture: ExternalPosturePut) -> ExternalPosture:
     conn.execute(external_posture_model.update().values(
-        **external_posture
+        **external_posture.dict()
     ).where(external_posture_model.c.id==id))
     conn.commit()
     return conn.execute(select(external_posture_model).where(external_posture_model.c.id==id)).first()

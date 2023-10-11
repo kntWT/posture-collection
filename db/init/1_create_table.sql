@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name TEXT NOT NULL,
     password TEXT NOT NULL,
+    internal_posture_calibration_id INT,
     neck_to_nose_standard DOUBLE,
     neck_angle_offset DOUBLE NOT NULL DEFAULT 0,
     created_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)

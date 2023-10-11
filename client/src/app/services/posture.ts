@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { OrientationWithUserId } from '../types/Orientation';
-import { calibrate } from '../store/user/actions';
 
 @Injectable({
 	providedIn: "root",

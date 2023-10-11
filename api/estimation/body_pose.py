@@ -69,6 +69,8 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     return {
         "nose_x": nose["x"],
         "nose_y": nose["y"],
+        "neck_x": neck["x"],
+        "neck_y": neck["y"],
         "neck_to_nose": float(neck_to_nose),
         "standard_dist": float(standard_dist)
     }

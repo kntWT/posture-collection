@@ -6,6 +6,7 @@ class User(BaseModel):
     id: int
     name: str
     password: str
+    internal_posture_calibration_id: int | None
     neck_to_nose_standard: float | None
     neck_angle_offset: float
     created_at: datetime
@@ -15,7 +16,8 @@ class UserPost(BaseModel):
     password: str
 
 class UserCalibrateInternalPosture(BaseModel):
-    neck_to_nose_standard: float
+    internal_posture_calibration_id: int
+    neck_to_nose_standard: Optional[float | None]
 
 class UserCalibrateExternalPosture(BaseModel):
     neck_angle_offset: float

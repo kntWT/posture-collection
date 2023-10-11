@@ -7,9 +7,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
 import { PostureService } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
-import { calibrate } from '../store/user/actions';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { Posture } from '../types/PostureScore';
 
 @Component({
   selector: 'app-video',
@@ -34,7 +34,13 @@ export class VideoComponent implements OnInit, OnDestroy {
   calibrateFlag: boolean = false;
   subscriptions: Subscription[] = [];
 
-  constructor(private router: Router, private userFacade: UserFacade, private postureService: PostureService) {}
+  userId: number = 0;
+
+  constructor(
+    private router: Router,
+    private userFacade: UserFacade,
+    private postureService: PostureService,
+  ) {}
 
   ngOnInit():void {
       this.videoEl = document.getElementById("video") as HTMLVideoElement;
@@ -44,7 +50,10 @@ export class VideoComponent implements OnInit, OnDestroy {
       const subscription = this.userFacade.loading$.subscribe(loading => {
         if (loading) return;
         this.userFacade.user$.subscribe(user => {
-          if (user.id !== 0) return;
+          if (user.id !== 0) {
+            this.userId = user.id;
+            return;
+          }
           if (alert("ログインしてから再度アクセスしてください．") === undefined) {
             this.router.navigate(["/"]);
             this.removeAllSubscriptions();
@@ -167,10 +176,15 @@ export class VideoComponent implements OnInit, OnDestroy {
       }
       this.postureService.post(orientationWithUserId, file)
         .subscribe(res => {
-          console.log(res);
+          if (this.calibrateFlag) {
+            this.userFacade.calibrate({
+              id: this.userId,
+              internalPostureCalibrationId: (res as Posture).id
+            });
+          }
+          this.calibrateFlag = false;
           this.removeAllSubscriptions();
         });
-      this.calibrateFlag = false;
     });
     this.subscriptions.push(subscription);
   }
