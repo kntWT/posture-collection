@@ -31,8 +31,8 @@ async def update_estimation(file_name: str):
             return
         image = cv2.imread(f"{_original_image_dir}/{file_name}")
         tasks: List[Any] = []
-        tasks.append(calc_neck_dist(image))
-        tasks.append(calc_head_angle(image))
+        tasks.append(calc_neck_dist(image, file_name))
+        tasks.append(calc_head_angle(image, file_name))
         face_feature, head_pose = await asyncio.gather(*tasks)
         if face_feature is None or head_pose is None:
             pass

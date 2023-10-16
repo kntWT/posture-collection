@@ -32,7 +32,7 @@ def parse_point(cand) -> Point:
         "score": cand[2],
     }
 
-async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
+async def calc_neck_dist(img: np.ndarray = None, file_name: str="no_name") -> Dict | None:
     if img is None:
         return None
     candidate, subset = body_estimation(img)
@@ -56,7 +56,7 @@ async def calc_neck_dist(img: np.ndarray = None) -> Dict | None:
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     canvas: np.ndarray = copy.deepcopy(img)
     canvas = util.draw_bodypose(canvas, candidate, subset)
-    cv2.imwrite(f"{_image_dir}/neck/{nose['score']}_{neck['score']}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", canvas)
+    cv2.imwrite(f"{_image_dir}/neck/{file_name}.jpg", canvas)
     if nose["score"] < 0.5 or \
         neck["score"] < 0.1 or \
         right_eye["score"] < 0.4 or \

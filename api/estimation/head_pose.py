@@ -70,7 +70,7 @@ model.to(device)
 # Test the Model
 model.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
 
-async def calc_head_angle(img=None) -> Dict | None:
+async def calc_head_angle(img=None, file_name: str = "no_name") -> Dict | None:
     if img is None:
         return None
     
@@ -111,7 +111,7 @@ async def calc_head_angle(img=None) -> Dict | None:
     #utils.draw_axis(frame, y_pred_deg, p_pred_deg, r_pred_deg, left+int(.5*(right-left)), top, size=100)
     utils.plot_pose_cube(img,  yaw, pitch, roll, x_min + int(.5*(
         x_max-x_min)), y_min + int(.5*(y_max-y_min)), size=bbox_width)
-    cv2.imwrite(f"{_image_dir}/head/{pitch}_{yaw}_{roll}_{''.join(random.choices(string.ascii_uppercase +string.digits, k=10))}.jpg", img)
+    cv2.imwrite(f"{_image_dir}/head/{file_name}.jpg", img)
     return {
         "pitch": float(pitch),
         "yaw": float(yaw),
