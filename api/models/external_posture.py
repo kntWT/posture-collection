@@ -8,6 +8,7 @@ external_posture = Table(
     Column('id', Integer, nullable=False, primary_key=True, autoincrement=True),
     Column('user_id', Integer, ForeignKey("users.id"), nullable=False, server_default="1"),
     Column('neck_angle', DOUBLE, nullable=False),
+    Column('torso_angle', DOUBLE, nullable=False),
     Column('created_at', TIMESTAMP, server_default=current_timestamp())
 )
 

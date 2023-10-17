@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from models.external_posture import external_posture as external_posture_model
 from config.db import conn
-from schemas.external_posture import ExternalPosture, ExternalPosturePost, ExternalPosturePut
+from schemas.external_posture import ExternalPosture, ExternalPosturePost
 from sqlalchemy import select, desc
 from typing import List
 
@@ -26,11 +26,3 @@ async def post_external_posture(external_posture: ExternalPosturePost) -> Extern
     ))
     conn.commit()
     return conn.execute(select(external_posture_model).order_by(desc(external_posture_model.c.created_at))).first()
-
-@external_posture.put("/{id}")
-async def update_internal_posture_id(id: int, external_posture: ExternalPosturePut) -> ExternalPosture:
-    conn.execute(external_posture_model.update().values(
-        **external_posture.dict()
-    ).where(external_posture_model.c.id==id))
-    conn.commit()
-    return conn.execute(select(external_posture_model).where(external_posture_model.c.id==id)).first()

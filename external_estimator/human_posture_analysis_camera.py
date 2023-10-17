@@ -63,10 +63,15 @@ def calibrate(offset) -> NoReturn:
     finally:
         return
 
-def post(neck_angle: float, now: datetime) -> NoReturn:
+def post(neck_angle: float, torso_angle, now: datetime) -> NoReturn:
     if len(user) <= 0:
         return
-    data = json.dumps({"user_id": user["id"], "neck_angle": neck_angle, "created_at": now.strftime("%Y-%m-%d %H:%M:%S.%f")})
+    data = json.dumps({
+        "user_id": user["id"],
+        "neck_angle": neck_angle,
+        "torso_angle": torso_angle,
+        "created_at": now.strftime("%Y-%m-%d %H:%M:%S.%f")
+    })
     try:
         res = requests.post(f"{API_URL}/external-posture/", data)
         res.raise_for_status()
@@ -103,6 +108,7 @@ pose = mp_pose.Pose()
 API_URL: str = "http://localhost:4201"
 NECK_ANGLE_OFFSET: float = 0
 user = {}
+is_sending: bool = False
 # ===============================================================================================#
 
 
@@ -221,24 +227,36 @@ if __name__ == "__main__":
         good_time = (1 / fps) * good_frames
         bad_time =  (1 / fps) * bad_frames
 
-        # Pose time.
-        if good_time > 0:
-            time_string_good = 'Good Posture Time : ' + str(round(good_time, 1)) + 's'
-            cv2.putText(image, time_string_good, (10, h - 20), font, 0.9, green, 2)
-        else:
-            time_string_bad = 'Bad Posture Time : ' + str(round(bad_time, 1)) + 's'
-            cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
+        # # Pose time.
+        # if good_time > 0:
+        #     time_string_good = 'Good Posture Time : ' + str(round(good_time, 1)) + 's'
+        #     cv2.putText(image, time_string_good, (10, h - 20), font, 0.9, green, 2)
+        # else:
+        #     time_string_bad = 'Bad Posture Time : ' + str(round(bad_time, 1)) + 's'
+        #     cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
 
         # If you stay in bad posture for more than 3 minutes (180s) send an alert.
         if bad_time > 180:
             sendWarning()
 
-        now = datetime.datetime.now()
-        # post(neck_inclination, now)
+        # whether send api or not
+        if is_sending:
+            cv2.putText(image, "sending", (10, h - 20), font, 0.9, green, 2)
+        else:
+            cv2.putText(image, "stopping", (10, h - 20), font, 0.9, red, 2)
+
         # Display.
         cv2.imshow('MediaPipe Pose', image)
-        file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
-        # cv2.imwrite(f"images/{file_name}.jpeg", image)
+
+        # press space key
+        if cv2.waitKey(33) == 32:
+            is_sending = not is_sending
+
+        if is_sending:
+            now = datetime.datetime.now()
+            file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
+            cv2.imwrite(f"images/{file_name}.jpeg", image)
+            post(neck_inclination, torso_inclination, now)
         if cv2.waitKey(5) & 0xFF == ord('q'):
             break
 
