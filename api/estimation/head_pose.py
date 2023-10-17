@@ -70,7 +70,7 @@ model.to(device)
 # Test the Model
 model.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
 
-async def calc_head_angle(img=None, file_name: str = "no_name") -> Dict | None:
+async def estimate_head_pose(img=None, file_name: str = "no_name") -> Dict | None:
     if img is None:
         return None
     

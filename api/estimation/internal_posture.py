@@ -7,8 +7,8 @@ from typing import List, Any
 import cv2
 
 from config.env import original_image_dir
-from estimation.body_pose import calc_neck_dist
-from estimation.head_pose import calc_head_angle
+from estimation.body_pose import estimate_body_pose
+from estimation.head_pose import estimate_head_pose
 
 API_URL = "http://localhost:4201"
 
@@ -31,8 +31,8 @@ async def update_estimation(file_name: str):
             return
         image = cv2.imread(f"{_original_image_dir}/{file_name}")
         tasks: List[Any] = []
-        tasks.append(calc_neck_dist(image, file_name))
-        tasks.append(calc_head_angle(image, file_name))
+        tasks.append(estimate_body_pose(image, file_name))
+        tasks.append(estimate_head_pose(image, file_name))
         face_feature, head_pose = await asyncio.gather(*tasks)
         if face_feature is None or head_pose is None:
             pass

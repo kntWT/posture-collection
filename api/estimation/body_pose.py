@@ -32,7 +32,7 @@ def parse_point(cand) -> Point:
         "score": cand[2],
     }
 
-async def calc_neck_dist(img: np.ndarray = None, file_name: str="no_name") -> Dict | None:
+async def estimate_body_pose(img: np.ndarray = None, file_name: str="no_name") -> Dict | None:
     if img is None:
         return None
     candidate, subset = body_estimation(img)
