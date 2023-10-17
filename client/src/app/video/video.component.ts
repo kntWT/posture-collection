@@ -146,7 +146,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         const fileName: string = this.dateFormat(now)
           .replaceAll("/", "-")
           .replaceAll(" ", "_");
-        file = new File([blob], `${fileName}.jpeg`);
+        file = new File([blob], `${fileName}.jpg`);
         resolve(file);
       }, "image/jpeg", 0.8);
       return null;
