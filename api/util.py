@@ -1,12 +1,16 @@
+import cv2
+from pydantic import BaseModel
+
 from typing import Any, NoReturn
 import os
 import json
-from pydantic import BaseModel
 
-original_image_dir: str = os.environ.get("ORIGINAL_IMAGE_DIR")
+image_dir: str = os.environ.get("IMAGE_DIR")
 
-def save_file(file) -> str:
-    file_name: str = f"{original_image_dir}/{file.filename}"
+def save_file(file, path: str = "") -> str:
+    dir_path = f"{image_dir}/{path}/original/"
+    os.makedirs(dir_path, exist_ok=True)
+    file_name = os.path.join(dir_path, file.filename)
     with open(file_name,'wb+') as f:
         f.write(file.file.read())
         f.close()

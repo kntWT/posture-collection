@@ -3,6 +3,7 @@ import numpy as np
 import math
 import torch
 import sys
+import os
 from typing import Dict
 import copy
 import random
@@ -32,7 +33,7 @@ def parse_point(cand) -> Point:
         "score": cand[2],
     }
 
-async def estimate_body_pose(img: np.ndarray = None, file_name: str="no_name") -> Dict | None:
+async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name: str="no_name") -> Dict | None:
     if img is None:
         return None
     candidate, subset = body_estimation(img)
@@ -56,7 +57,9 @@ async def estimate_body_pose(img: np.ndarray = None, file_name: str="no_name") -
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     canvas: np.ndarray = copy.deepcopy(img)
     canvas = util.draw_bodypose(canvas, candidate, subset)
-    cv2.imwrite(f"{_image_dir}/neck/{file_name}.jpg", canvas)
+    save_path: str = f"{_image_dir}/{user_id}/neck"
+    os.makedirs(save_path, exist_ok=True)
+    cv2.imwrite(f"{save_path}/{file_name}.jpg", canvas)
     if nose["score"] < 0.5 or \
         neck["score"] < 0.1 or \
         right_eye["score"] < 0.4 or \

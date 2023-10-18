@@ -1,20 +1,19 @@
+import os
 import sys
 import requests
 from requests.exceptions import HTTPError
+import cv2
 import asyncio
 import json
-from typing import List, Any
-import cv2
+from typing import List, Dict, Any
 
 from config.env import original_image_dir
 from estimation.body_pose import estimate_body_pose
 from estimation.head_pose import estimate_head_pose
 
 API_URL = "http://localhost:4201"
-
-_original_image_dir: str = original_image_dir if original_image_dir is not None else "images/original"
     
-async def update_estimation(file_name: str):
+async def update_estimation(path: str, file_name: str):
     id: int = -1
     try:
         get_row = requests.get(f"{API_URL}/internal-posture/filename/{file_name}")
@@ -29,10 +28,10 @@ async def update_estimation(file_name: str):
     try:
         if id == -1:
             return
-        image = cv2.imread(f"{_original_image_dir}/{file_name}")
+        image = cv2.imread(os.path.join(path, file_name))
         tasks: List[Any] = []
-        tasks.append(estimate_body_pose(image, file_name))
-        tasks.append(estimate_head_pose(image, file_name))
+        tasks.append(estimate_body_pose(image, user_id, file_name))
+        tasks.append(estimate_head_pose(image, user_id, file_name))
         face_feature, head_pose = await asyncio.gather(*tasks)
         if face_feature is None or head_pose is None:
             pass
