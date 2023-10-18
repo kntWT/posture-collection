@@ -67,6 +67,9 @@ model.to(device)
 # Test the Model
 model.eval()  # Change model to 'eval' mode (BN uses moving mean/var).
 
+font = cv2.FONT_HERSHEY_SIMPLEX
+green = (127, 255, 0)
+
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
     cap.set(3, 640)
@@ -116,6 +119,11 @@ if __name__ == "__main__":
         utils.plot_pose_cube(img,  yaw, pitch, roll, x_min + int(.5*(
             x_max-x_min)), y_min + int(.5*(y_max-y_min)), size=bbox_width)
         # cv2.imwrite(f"{_image_dir}/head/{file_name}.jpg", img)
+
+        cv2.putText(img, f"pitch: {pitch}", (10, 30), font, 0.9, green, 2)
+        cv2.putText(img, f"yaw: {yaw}", (10, 60), font, 0.9, green, 2)
+        cv2.putText(img, f"roll: {roll}", (10, 90), font, 0.9, green, 2)
+
         cv2.imshow('sixdrepnet_demo', img)#一个窗口用以显示原视频
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
