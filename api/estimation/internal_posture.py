@@ -38,6 +38,8 @@ async def update_estimation(path: str, file_name: str):
         else:
             put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
             put_feature.raise_for_status()
+            if face_feature["neck_to_nose"] is None:
+                return
             neck_to_nose_standard = face_feature["neck_to_nose"] / face_feature["standard_dist"]
             if calibrate_flag:
                 calibrate_user = requests.put(

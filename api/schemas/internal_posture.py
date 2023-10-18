@@ -29,12 +29,12 @@ class InternalPostureOnlyOrientation(BaseModel):
     created_at: datetime | str = Field(alias="createdAt")
 
 class InternalPostureOnlyEstimation(BaseModel):
-    pitch: float
-    yaw: float
-    roll: float
-    nose_x: float
-    nose_y: float
-    neck_x: float
-    neck_y: float
-    neck_to_nose: float
-    standard_dist: float
+    pitch: float | None
+    yaw: float | None
+    roll: float | None
+    nose_x: float | None
+    nose_y: float | None
+    neck_x: float | None
+    neck_y: float | None
+    neck_to_nose: float | None
+    standard_dist: float | None
