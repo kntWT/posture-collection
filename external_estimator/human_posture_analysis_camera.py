@@ -50,8 +50,7 @@ def login(trial: int = 0) -> Dict:
         return login(trial + 1)
     
 def calibrate(offset) -> NoReturn:
-    NECK_ANGLE_OFFSET = offset
-    data = json.dumps({"neck_angle_offset": NECK_ANGLE_OFFSET})
+    data = json.dumps({"neck_angle_offset": offset})
     user_id: int = user["id"]
     try:
         res = requests.put(f"{API_URL}/user/calibration/external-posture/{user_id}", data)
@@ -114,7 +113,7 @@ is_sending: bool = False
 
 if __name__ == "__main__":
     user = login()
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     cap.set(3, 640)
     cap.set(4, 960)
 
@@ -166,14 +165,17 @@ if __name__ == "__main__":
         else:
             cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 150, 30), font, 0.9, red, 2)
 
+        # get input key
+        key = cv2.waitKey(1)
+        # presse enter key
+        if key == 13:
+            NECK_ANGLE_OFFSET = neck_inclination
+            calibrate(neck_inclination)
+        
         # Calculate angles.
         neck_inclination = findAngle(l_shldr_x, l_shldr_y, l_ear_x, l_ear_y)
         torso_inclination = findAngle(l_hip_x, l_hip_y, l_shldr_x, l_shldr_y)
         neck_angle: float = neck_inclination - NECK_ANGLE_OFFSET
-
-        # presse enter key
-        if cv2.waitKey(1) == 13:
-            calibrate(neck_inclination)
 
         # Draw landmarks.
         cv2.circle(image, (l_shldr_x, l_shldr_y), 7, yellow, -1)
@@ -249,7 +251,7 @@ if __name__ == "__main__":
         cv2.imshow('MediaPipe Pose', image)
 
         # press space key
-        if cv2.waitKey(33) == 32:
+        if key == 32:
             is_sending = not is_sending
 
         if is_sending:
@@ -257,7 +259,7 @@ if __name__ == "__main__":
             file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
             cv2.imwrite(f"images/{file_name}.jpeg", image)
             post(neck_inclination, torso_inclination, now)
-        if cv2.waitKey(5) & 0xFF == ord('q'):
+        if key & 0xFF == ord('q'):
             break
 
 cap.release()
