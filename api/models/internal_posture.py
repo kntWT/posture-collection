@@ -21,7 +21,8 @@ internal_posture = Table(
     Column('neck_to_nose', DOUBLE),
     Column('standard_dist', DOUBLE),
     Column('calibrate_flag', BOOLEAN, server_default="False"),
-    Column('created_at', TIMESTAMP, server_default=current_timestamp())
+    Column('created_at', TIMESTAMP, server_default=None),
+    Column('updated_at', TIMESTAMP, server_default=current_timestamp())
 )
 
 meta.create_all(engine)

@@ -18,7 +18,8 @@ class InternalPosture(BaseModel):
     neck_to_nose: float | None
     standard_dist: float | None
     calibrate_flag: bool
-    created_at: datetime
+    created_at: datetime | None
+    updated_at: datetime
 
 class InternalPostureOnlyOrientation(BaseModel):
     user_id: int = Field(alias="userId")
