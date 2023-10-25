@@ -1,7 +1,7 @@
 <div cdkOverlayOrigin #trigger="cdkOverlayOrigin"></div>
 
 <div>
-    <div  class="video-frame">
+    <!-- <div  class="video-frame">
         <video
             id="video"
             muted
@@ -26,7 +26,10 @@
                 キャリブレーション
             </button>
         </div>
-    </div>
+    </div> -->
+    <p>pitch: {{ deviceQuaternionDetector.quaternion.toEular().pitch }}</p>
+    <p>yaw: {{ deviceQuaternionDetector.quaternion.toEular().yaw }}</p>
+    <p>roll: {{ deviceQuaternionDetector.quaternion.toEular().roll }}</p>
 </div>
 
 <ng-template
@@ -56,6 +59,7 @@
             >
                 動作と方向へのアクセスを許可する
             </button>
+        </div>
         </div>
     </div>
 </ng-template>

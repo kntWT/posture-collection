@@ -4,7 +4,7 @@ import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 // import { PostureScore } from '../types/PostureScore';
-import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
+import { DeviceQuaternionDetector } from './plugins/OrientationSensor';
 import { PostureService } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
 import { Subscription } from 'rxjs';
@@ -26,7 +26,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   // standardNeckLength: number | null = null;
   // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
-  deviceOrientationDetector: DeviceOrientationDetector | null = null;
+  deviceQuaternionDetector: DeviceQuaternionDetector | null = null;
   openOverlay: boolean = true;
   allowCameraPermission: boolean = false;
   allowOrientationPermission: boolean = false;
@@ -119,8 +119,8 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   handleAllowOrientationPermission(): void {
-    this.deviceOrientationDetector = new DeviceOrientationDetector();
-    this.deviceOrientationDetector.requestPermission();
+    this.deviceQuaternionDetector = new DeviceQuaternionDetector();
+    this.deviceQuaternionDetector.requestPermission();
     this.allowOrientationPermission = true;
     this.handleOpenOverlay()
   }
@@ -158,35 +158,35 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   async postPosture(): Promise<void> {
-    const now = new Date();
-    const file = await this.getFrameAsFile(now);
-    if (file === null) return;
+    // const now = new Date();
+    // const file = await this.getFrameAsFile(now);
+    // if (file === null) return;
 
-    const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
-    // if (!orientation || Object.values(orientation).some(v => v === null)) return;
+    // const quaternion = this.deviceQuaternionDetector?.quaternion ?? {alpha: null, beta: null, gamma: null}
+    // // if (!quaternion || Object.values(quaternion).some(v => v === null)) return;
 
-    const subscription = this.userFacade.user$.subscribe(user => {
-      const orientationWithUserId = {
-        userId: user.id,
-        alpha: orientation.alpha,
-        beta: orientation.beta,
-        gamma: orientation.gamma,
-        calibrateFlag: this.calibrateFlag,
-        createdAt: this.dateFormat(now)
-      }
-      this.postureService.post(orientationWithUserId, file)
-        .subscribe(res => {
-          if (this.calibrateFlag) {
-            this.userFacade.calibrate({
-              id: this.userId,
-              internalPostureCalibrationId: (res as Posture).id
-            });
-          }
-          this.calibrateFlag = false;
-          this.removeAllSubscriptions();
-        });
-    });
-    this.subscriptions.push(subscription);
+    // const subscription = this.userFacade.user$.subscribe(user => {
+    //   const quaternionWithUserId = {
+    //     userId: user.id,
+    //     alpha: quaternion.alpha,
+    //     beta: quaternion.beta,
+    //     gamma: quaternion.gamma,
+    //     calibrateFlag: this.calibrateFlag,
+    //     createdAt: this.dateFormat(now)
+    //   }
+    //   this.postureService.post(quaternionWithUserId, file)
+    //     .subscribe(res => {
+    //       if (this.calibrateFlag) {
+    //         this.userFacade.calibrate({
+    //           id: this.userId,
+    //           internalPostureCalibrationId: (res as Posture).id
+    //         });
+    //       }
+    //       this.calibrateFlag = false;
+    //       this.removeAllSubscriptions();
+    //     });
+    // });
+    // this.subscriptions.push(subscription);
   }
 
   calibrate(): void {
