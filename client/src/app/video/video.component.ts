@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 // import { PostureScore } from '../types/PostureScore';
 import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
+import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
 import { PostureService } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
 import { Subscription } from 'rxjs';
@@ -27,9 +28,11 @@ export class VideoComponent implements OnInit, OnDestroy {
   // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
   deviceOrientationDetector: DeviceOrientationDetector | null = null;
+  deviceMotionDetector: DeviceMotionDetector | null = null;
   openOverlay: boolean = true;
   allowCameraPermission: boolean = false;
   allowOrientationPermission: boolean = false;
+  allowMotionPermission: boolean = false;
 
   calibrateFlag: boolean = false;
   subscriptions: Subscription[] = [];
@@ -77,7 +80,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (this.videoEl?.paused) return;
     if (!this.isPlaying) return;
     if (this.openOverlay) return;
-    this.postPosture();
+    // this.postPosture();
   }
 
   public handlePlay(): void {
@@ -91,7 +94,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   handleOpenOverlay(): void {
-    this.openOverlay = !(this.allowCameraPermission && this.allowOrientationPermission);
+    this.openOverlay = !(this.allowCameraPermission && this.allowOrientationPermission && this.allowMotionPermission);
     if (this.openOverlay) {
       this.handlePlay();
     }
@@ -99,6 +102,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   async handleAllowCameraPermission(): Promise<void> {
     if (this.videoEl === null) {
+      this.allowCameraPermission = true;
       console.log("failed to get video element");
       return
     }
@@ -122,6 +126,13 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.deviceOrientationDetector = new DeviceOrientationDetector();
     this.deviceOrientationDetector.requestPermission();
     this.allowOrientationPermission = true;
+    this.handleOpenOverlay()
+  }
+
+  handleAllowMotionPermission(): void {
+    this.deviceMotionDetector = new DeviceMotionDetector();
+    this.deviceMotionDetector.requestPermission();
+    this.allowMotionPermission = true;
     this.handleOpenOverlay()
   }
 
@@ -157,37 +168,37 @@ export class VideoComponent implements OnInit, OnDestroy {
     return `${date.toLocaleString("jp-JP", {timeZone: "Asia/Tokyo"})}.${date.getMilliseconds()}`
   }
 
-  async postPosture(): Promise<void> {
-    const now = new Date();
-    const file = await this.getFrameAsFile(now);
-    if (file === null) return;
+  // async postPosture(): Promise<void> {
+  //   const now = new Date();
+  //   const file = await this.getFrameAsFile(now);
+  //   if (file === null) return;
 
-    const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
-    // if (!orientation || Object.values(orientation).some(v => v === null)) return;
+  //   const orientation = this.deviceOrientationDetector?.orientation ?? {alpha: null, beta: null, gamma: null}
+  //   // if (!orientation || Object.values(orientation).some(v => v === null)) return;
 
-    const subscription = this.userFacade.user$.subscribe(user => {
-      const orientationWithUserId = {
-        userId: user.id,
-        alpha: orientation.alpha,
-        beta: orientation.beta,
-        gamma: orientation.gamma,
-        calibrateFlag: this.calibrateFlag,
-        createdAt: this.dateFormat(now)
-      }
-      this.postureService.post(orientationWithUserId, file)
-        .subscribe(res => {
-          if (this.calibrateFlag) {
-            this.userFacade.calibrate({
-              id: this.userId,
-              internalPostureCalibrationId: (res as Posture).id
-            });
-          }
-          this.calibrateFlag = false;
-          this.removeAllSubscriptions();
-        });
-    });
-    this.subscriptions.push(subscription);
-  }
+  //   const subscription = this.userFacade.user$.subscribe(user => {
+  //     const orientationWithUserId = {
+  //       userId: user.id,
+  //       alpha: orientation.alpha,
+  //       beta: orientation.beta,
+  //       gamma: orientation.gamma,
+  //       calibrateFlag: this.calibrateFlag,
+  //       createdAt: this.dateFormat(now)
+  //     }
+  //     this.postureService.post(orientationWithUserId, file)
+  //       .subscribe(res => {
+  //         if (this.calibrateFlag) {
+  //           this.userFacade.calibrate({
+  //             id: this.userId,
+  //             internalPostureCalibrationId: (res as Posture).id
+  //           });
+  //         }
+  //         this.calibrateFlag = false;
+  //         this.removeAllSubscriptions();
+  //       });
+  //   });
+  //   this.subscriptions.push(subscription);
+  // }
 
   calibrate(): void {
     this.calibrateFlag = true;

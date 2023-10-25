@@ -1,7 +1,7 @@
 <div cdkOverlayOrigin #trigger="cdkOverlayOrigin"></div>
 
 <div>
-    <div  class="video-frame">
+    <!-- <div  class="video-frame">
         <video
             id="video"
             muted
@@ -26,7 +26,23 @@
                 キャリブレーション
             </button>
         </div>
-    </div>
+    </div> -->
+    <p>x: {{deviceMotionDetector?.motion?.x}}</p>
+    <p>y: {{deviceMotionDetector?.motion?.y}}</p>
+    <p>z: {{deviceMotionDetector?.motion?.z}}</p>
+    <p>pitch: {{deviceMotionDetector?.motion?.pitch}}</p>
+    <p>yaw: {{deviceMotionDetector?.motion?.yaw}}</p>
+    <p>roll: {{deviceMotionDetector?.motion?.roll}}</p>
+    <br>
+    <p>ax: {{deviceMotionDetector?.motion?.acceleration?.x}}</p>
+    <p>ay: {{deviceMotionDetector?.motion?.acceleration?.y}}</p>
+    <p>az: {{deviceMotionDetector?.motion?.acceleration?.z}}</p>
+    <p>gx: {{deviceMotionDetector?.motion?.acceleration?.gravityX}}</p>
+    <p>gy: {{deviceMotionDetector?.motion?.acceleration?.gravityY}}</p>
+    <p>gz: {{deviceMotionDetector?.motion?.acceleration?.gravityZ}}</p>
+    <p>rx: {{deviceMotionDetector?.motion?.acceleration?.rotationX}}</p>
+    <p>ry: {{deviceMotionDetector?.motion?.acceleration?.rotationY}}</p>
+    <p>rz: {{deviceMotionDetector?.motion?.acceleration?.rotationZ}}</p>
 </div>
 
 <ng-template
@@ -55,6 +71,17 @@
                 class="my-4"
             >
                 動作と方向へのアクセスを許可する
+            </button>
+        </div>
+        <div>
+            <button
+                mat-raised-button
+                color="primary"
+                (click)="handleAllowMotionPermission()"
+                [disabled]="allowMotionPermission"
+                class="my-4"
+            >
+                加速度センサへのアクセスを許可する
             </button>
         </div>
     </div>
