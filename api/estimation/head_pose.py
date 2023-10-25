@@ -75,6 +75,9 @@ async def estimate_head_pose(img=None, user_id: int = 1, file_name: str = "no_na
         return None
     
     faces = sorted(detector(img), key=lambda x: x[2], reverse=True)
+    if len(faces) <= 0:
+        print("face cannot detected")
+        return None
     box, landmarks, score = faces[0]
     # Print the location of each face in this image
     if score < .95:
