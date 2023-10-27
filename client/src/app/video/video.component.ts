@@ -4,8 +4,9 @@ import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 // import { PostureScore } from '../types/PostureScore';
-import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
-import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
+// import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
+// import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
+import { DeviceSensor } from './plugins/DeviceSensor';
 import { PostureService } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
 import { Subscription } from 'rxjs';
@@ -27,8 +28,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   // standardNeckLength: number | null = null;
   // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
-  deviceOrientationDetector: DeviceOrientationDetector | null = null;
-  deviceMotionDetector: DeviceMotionDetector | null = null;
+  deviceSensor: DeviceSensor | null = null;
   openOverlay: boolean = true;
   allowCameraPermission: boolean = false;
   allowOrientationPermission: boolean = false;
@@ -43,7 +43,9 @@ export class VideoComponent implements OnInit, OnDestroy {
     private router: Router,
     private userFacade: UserFacade,
     private postureService: PostureService,
-  ) {}
+  ) {
+    this.deviceSensor = new DeviceSensor();
+  }
 
   ngOnInit():void {
       this.videoEl = document.getElementById("video") as HTMLVideoElement;
@@ -94,7 +96,11 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   handleOpenOverlay(): void {
-    this.openOverlay = !(this.allowCameraPermission && this.allowOrientationPermission && this.allowMotionPermission);
+    this.openOverlay = !(
+      this.allowCameraPermission
+      && this.allowOrientationPermission
+      && this.allowMotionPermission
+    );
     if (this.openOverlay) {
       this.handlePlay();
     }
@@ -122,16 +128,14 @@ export class VideoComponent implements OnInit, OnDestroy {
     this.handleOpenOverlay();
   }
 
-  handleAllowOrientationPermission(): void {
-    this.deviceOrientationDetector = new DeviceOrientationDetector();
-    this.deviceOrientationDetector.requestPermission();
+  async handleAllowOrientationPermission(): Promise<void> {
+    await this.deviceSensor?.requestOrientationPermission();
     this.allowOrientationPermission = true;
     this.handleOpenOverlay()
   }
 
-  handleAllowMotionPermission(): void {
-    this.deviceMotionDetector = new DeviceMotionDetector();
-    this.deviceMotionDetector.requestPermission();
+  async handleAllowMotionPermission(): Promise<void> {
+    await this.deviceSensor?.requestMotionPermission();
     this.allowMotionPermission = true;
     this.handleOpenOverlay()
   }

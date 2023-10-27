@@ -27,10 +27,15 @@
             </button>
         </div>
     </div> -->
-    <p>pitch: {{deviceMotionDetector?.motion?.pitch}}</p>
-    <p>yaw: {{deviceMotionDetector?.motion?.yaw}}</p>
-    <p>roll: {{deviceMotionDetector?.motion?.roll}}</p>
-    <p>alpha: {{deviceOrientationDetector?.orientation?.alpha}}</p>
+    <p>{{deviceSensor?.message2}}</p>
+    <p>pitch: {{deviceSensor?.eular?.pitch}}</p>
+    <p>yaw: {{deviceSensor?.eular?.yaw}}</p>
+    <p>roll: {{deviceSensor?.eular?.roll}}</p>
+    <p>test</p>
+    <p>pitch: {{deviceSensor?.test?.pitch}}</p>
+    <p>yaw: {{deviceSensor?.test?.yaw}}</p>
+    <p>roll: {{deviceSensor?.test?.roll}}</p>
+    <!-- <p>alpha: {{deviceOrientationDetector?.orientation?.alpha}}</p>
     <p>beta: {{deviceOrientationDetector?.orientation?.beta}}</p>
     <p>gamma: {{deviceOrientationDetector?.orientation?.gamma}}</p>
     <br>
@@ -42,7 +47,7 @@
     <p>gz: {{deviceMotionDetector?.motion?.acceleration?.gravityZ}}</p>
     <p>rx: {{deviceMotionDetector?.motion?.acceleration?.rotationX}}</p>
     <p>ry: {{deviceMotionDetector?.motion?.acceleration?.rotationY}}</p>
-    <p>rz: {{deviceMotionDetector?.motion?.acceleration?.rotationZ}}</p>
+    <p>rz: {{deviceMotionDetector?.motion?.acceleration?.rotationZ}}</p> -->
 </div>
 
 <ng-template
