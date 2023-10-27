@@ -60,8 +60,24 @@ const degreeToRadian = (degree: number): number => {
     return degree * Math.PI / 180;
 }
 
+const eularToRadian = (eular: Eular): Eular => {
+    return {
+        pitch: degreeToRadian(eular.pitch),
+        roll: degreeToRadian(eular.roll),
+        yaw: degreeToRadian(eular.yaw)
+    };
+}
+
 const radianToDegree = (radian: number): number => {
     return radian * 180 / Math.PI;
+}
+
+const eularToDegree = (eular: Eular): Eular => {
+    return {
+        pitch: radianToDegree(eular.pitch),
+        roll: radianToDegree(eular.roll),
+        yaw: radianToDegree(eular.yaw)
+    };
 }
 
 // ~ -180, 180 ~ -> -180 ~ 180
@@ -77,6 +93,8 @@ export {
     lowPassFilter,
     highPassFilter,
     degreeToRadian,
+    eularToRadian,
     radianToDegree,
+    eularToDegree,
     normalizeDegree
 }

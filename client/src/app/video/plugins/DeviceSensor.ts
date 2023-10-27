@@ -1,7 +1,7 @@
 import { DeviceMotionDetector } from "./DeviceMotionDetector";
 import { DeviceOrientationDetector } from "./DeviceOrientationDetector";
 import { Eular, Quaternion } from "src/app/types/Sensor";
-import { toQuaternion, toEular, radianToDegree, degreeToRadian } from "./utils";
+import { toQuaternion, eularToDegree, eularToRadian } from "./utils";
 
 export class DeviceSensor {
 
@@ -12,22 +12,9 @@ export class DeviceSensor {
         roll: 0,
         yaw: 0
     };
-    test: Eular = {
-        roll: 20,
-        pitch: 40,
-        yaw: 52
-    };
-    message2: string = "";
+    quaternion: Quaternion = toQuaternion(this.eular);
 
     constructor() {
-        this.test.pitch = degreeToRadian(this.test.pitch);
-        this.test.roll = degreeToRadian(this.test.roll);
-        this.test.yaw = degreeToRadian(this.test.yaw);
-        const q = toQuaternion(this.test);
-        this.test = toEular(q);
-        this.test.pitch = radianToDegree(this.test.pitch);
-        this.test.roll = radianToDegree(this.test.roll);
-        this.test.yaw = radianToDegree(this.test.yaw);
     }
 
     async requestOrientationPermission() {
@@ -51,7 +38,10 @@ export class DeviceSensor {
 
         window.addEventListener('deviceorientation', e => {
             if (!this.orientationDetector) return;
+            
             this.eular.yaw = this.orientationDetector.getOrientation(e).gamma || 0;
+
+            this.quaternion = toQuaternion(eularToRadian(this.eular));
         });
 
         window.addEventListener('devicemotion', e => {
@@ -60,7 +50,8 @@ export class DeviceSensor {
 
             this.eular.pitch = eular.pitch;
             this.eular.roll = eular.roll;
-            this.message2 = "orientationDetector: " + eular.roll + "\n";
+
+            this.quaternion = toQuaternion(eularToRadian(this.eular));
         });
     }
 

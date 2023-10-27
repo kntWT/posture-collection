@@ -1,5 +1,5 @@
 import { Motion, DeviceMotionEventiOS, Eular } from "src/app/types/Sensor";
-import { highPassFilter, normalizeDegree, radianToDegree, lowPassFilter } from "./utils";
+import { highPassFilter, normalizeDegree, radianToDegree, degreeToRadian, lowPassFilter } from "./utils";
 
 
 export class DeviceMotionDetector {
@@ -25,7 +25,7 @@ export class DeviceMotionDetector {
     osCorrection: number = 0; // to correct alpha value on Android device
     parmitted: boolean = false;
     updatedAt: Date | null = null;
-    k: number = 0.9;
+    k: number = 0.95;
 
     constructor(){
     }
@@ -92,12 +92,16 @@ export class DeviceMotionDetector {
 
     getEularAngle(motionEvent: DeviceMotionEvent): Eular {
         const dt = motionEvent.interval * 1000;
+        const radiansRoll = degreeToRadian(this.motion.roll);
+        const radiansPitch = degreeToRadian(this.motion.pitch);
+        const radiansYaw = degreeToRadian(this.motion.yaw);
+
         const rollAcc = highPassFilter(
             this.k,
-            this.motion.roll,
+            radiansRoll,
             (motionEvent.rotationRate?.gamma ?? 0)
-                + Math.sin(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (motionEvent.rotationRate?.alpha ?? 0)
-                + Math.cos(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (motionEvent.rotationRate?.beta ?? 0)
+                + Math.sin(radiansRoll) * Math.sin(radiansPitch) / Math.cos(radiansPitch) * (motionEvent.rotationRate?.alpha ?? 0)
+                + Math.cos(radiansRoll) * Math.sin(radiansPitch) / Math.cos(radiansPitch) * (motionEvent.rotationRate?.beta ?? 0)
         );
         const rollGrav = normalizeDegree(
             radianToDegree(
@@ -109,9 +113,9 @@ export class DeviceMotionDetector {
         );
         const pitchAcc = highPassFilter(
             this.k,
-            this.motion.pitch,
-            Math.cos(this.motion.roll)*(motionEvent.rotationRate?.alpha ?? 0)
-                - Math.sin(this.motion.roll)*(motionEvent.rotationRate?.beta ?? 0)
+            radiansPitch,
+            Math.cos(radiansRoll)*(motionEvent.rotationRate?.alpha ?? 0)
+                - Math.sin(radiansRoll)*(motionEvent.rotationRate?.beta ?? 0)
         );
         const pitchGrav = normalizeDegree(
             radianToDegree(
@@ -123,9 +127,9 @@ export class DeviceMotionDetector {
         );
         const yawAcc = highPassFilter(
             this.k,
-            this.motion.yaw,
-            Math.sin(this.motion.roll) / Math.cos(this.motion.pitch) * (motionEvent.rotationRate?.alpha ?? 0)*dt
-                + Math.cos(this.motion.roll) / Math.cos(this.motion.pitch) * (motionEvent.rotationRate?.beta ?? 0)*dt
+            radiansYaw,
+            Math.sin(radiansRoll) / Math.cos(radiansPitch) * (motionEvent.rotationRate?.alpha ?? 0)*dt
+                + Math.cos(radiansRoll) / Math.cos(radiansPitch) * (motionEvent.rotationRate?.beta ?? 0)*dt
         );
         const yawGrav = normalizeDegree(
             radianToDegree(
@@ -144,6 +148,10 @@ export class DeviceMotionDetector {
         // const yaw = this.complementaryFilter(yawAcc, yawGrav);
         const yaw = yawAcc;
         // const yaw = this.lowPassFilter(this.motion.yaw, yawGrav);
+
+        this.motion.roll = roll;
+        this.motion.pitch = pitch;
+        this.motion.yaw = yaw;
 
         return {
             pitch,
