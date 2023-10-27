@@ -27,6 +27,14 @@ async def get_all_features() -> List:
     ).join(
         user_model,
         internal_posture_model.c.user_id == user_model.c.id
+    ).filter(
+        and_(
+            and_(
+                internal_posture_model.c.orientation_alpha is not None,
+                internal_posture_model.c.pitch is not None
+            ),
+            internal_posture_model.c.neck_to_nose is not None
+        )
     )
     responces = conn.execute(statement).fetchall()
     result = []
