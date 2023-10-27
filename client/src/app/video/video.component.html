@@ -57,5 +57,16 @@
                 動作と方向へのアクセスを許可する
             </button>
         </div>
+        <div>
+            <button
+                mat-raised-button
+                color="primary"
+                (click)="handleAllowMotionPermission()"
+                [disabled]="allowMotionPermission"
+                class="my-4"
+            >
+                加速度センサへのアクセスを許可する
+            </button>
+        </div>
     </div>
 </ng-template>
