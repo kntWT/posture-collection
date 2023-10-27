@@ -60,6 +60,7 @@ export class DeviceMotionDetector {
         if(!window || !this.parmitted) return;
 
         window.addEventListener('devicemotion', e => {
+            const dt = e.interval * 1000;
             this.motion.acceleration.x = e.acceleration?.x;
             this.motion.acceleration.y = e.acceleration?.y;
             this.motion.acceleration.z = e.acceleration?.z;
@@ -71,12 +72,15 @@ export class DeviceMotionDetector {
             this.motion.acceleration.rotationZ = e.rotationRate?.gamma;
 
             // this.motion.x += (e.acceleration?.x ?? 0) * (e.interval ** 2);
-            this.motion.x = this.lowPassFilter(this.motion.x, (e.acceleration?.x ?? 0) * e.interval);
-            this.motion.y = this.lowPassFilter(this.motion.y, (e.acceleration?.y ?? 0) * e.interval);
-            this.motion.z = this.lowPassFilter(this.motion.z, (e.acceleration?.z ?? 0) * e.interval);
+            this.motion.x = this.highPassFilter(this.motion.x, (e.acceleration?.x ?? 0) * dt);
+            this.motion.y = this.highPassFilter(this.motion.y, (e.acceleration?.y ?? 0) * dt);
+            this.motion.z = this.highPassFilter(this.motion.z, (e.acceleration?.z ?? 0) * dt);
 
-            const pitchAcc = Math.cos(this.motion.roll)*(e.rotationRate?.alpha ?? 0)
-                - Math.sin(this.motion.roll)*(e.rotationRate?.beta ?? 0);
+            const pitchAcc = this.highPassFilter(
+                this.motion.pitch,
+                Math.cos(this.motion.roll)*(e.rotationRate?.alpha ?? 0)
+                    - Math.sin(this.motion.roll)*(e.rotationRate?.beta ?? 0)
+            );
             const pitchGrav = this.normalizeDegree(
                 this.radianToDegree(
                     Math.atan2(
@@ -85,8 +89,11 @@ export class DeviceMotionDetector {
                     )
                 )
             );
-            const yawAcc = Math.sin(this.motion.roll) / Math.cos(this.motion.pitch) * (e.rotationRate?.alpha ?? 0)
-                + Math.cos(this.motion.roll) / Math.cos(this.motion.pitch) * (e.rotationRate?.beta ?? 0);
+            const yawAcc = this.highPassFilter(
+                this.motion.yaw,
+                Math.sin(this.motion.roll) / Math.cos(this.motion.pitch) * (e.rotationRate?.alpha ?? 0)
+                + Math.cos(this.motion.roll) / Math.cos(this.motion.pitch) * (e.rotationRate?.beta ?? 0)
+            );
             const yawGrav = this.normalizeDegree(
                 this.radianToDegree(
                     Math.atan2(
@@ -95,9 +102,12 @@ export class DeviceMotionDetector {
                     )
                 )
             );
-            const rollAcc = (e.rotationRate?.gamma ?? 0)
-                + Math.sin(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (e.rotationRate?.alpha ?? 0)
-                + Math.cos(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (e.rotationRate?.beta ?? 0);
+            const rollAcc = this.highPassFilter(
+                this.motion.roll,
+                (e.rotationRate?.gamma ?? 0)
+                    + Math.sin(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (e.rotationRate?.alpha ?? 0)
+                    + Math.cos(this.motion.roll) * Math.sin(this.motion.pitch) / Math.cos(this.motion.pitch) * (e.rotationRate?.beta ?? 0)
+            );
             const rollGrav = this.normalizeDegree(
                 this.radianToDegree(
                     Math.atan2(
@@ -106,11 +116,14 @@ export class DeviceMotionDetector {
                     )
                 ) - 90
             );
-            // this.motion.pitch = this.complementaryFilter(this.motion.pitch, pitchAcc, pitchGrav, e.interval);
+            // this.motion.pitch = this.complementaryFilter(this.motion.pitch, pitchAcc*dt, pitchGrav);
+            // this.motion.pitch = pitchAcc;
             this.motion.pitch = this.lowPassFilter(this.motion.pitch, pitchGrav);
-            // this.motion.yaw = this.complementaryFilter(this.motion.yaw, yawAcc, yawGrav, e.interval);
+            // this.motion.yaw = this.complementaryFilter(this.motion.yaw, yawAcc*dt, yawGrav);
+            // this.motion.yaw = yawAcc;
             this.motion.yaw = this.lowPassFilter(this.motion.yaw, yawGrav);
-            // this.motion.roll = this.complementaryFilter(this.motion.roll, rollAcc, rollGrav, e.interval);
+            // this.motion.roll = this.complementaryFilter(this.motion.roll, rollAcc*dt, rollGrav);
+            // this.motion.roll = rollAcc;
             this.motion.roll = this.lowPassFilter(this.motion.roll, rollGrav);
 
             this.updatedAt = new Date();
@@ -118,13 +131,18 @@ export class DeviceMotionDetector {
     }
 
     // 相補フィルタ
-    complementaryFilter(ptheta: number, thetaA: number, thetaB: number, dt: number): number {
-        return this.k*(ptheta + thetaA*dt) + (1-this.k)*thetaB;
+    complementaryFilter(ptheta: number, thetaA: number, thetaB: number): number {
+        return this.k*(ptheta + thetaA) + (1-this.k)*thetaB;
     }
 
     //ローパスフィルタ
     lowPassFilter(pvalue: number, value: number): number {
         return this.k*pvalue + (1-this.k)*value;
+    }
+
+    // ハイパスフィルタ
+    highPassFilter(pvalue: number, value: number): number {
+        return value - this.lowPassFilter(pvalue, value);
     }
 
     degreeToRadian(degree: number): number {
