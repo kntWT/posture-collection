@@ -39,6 +39,7 @@ export class DeviceSensor {
         window.addEventListener('deviceorientation', e => {
             if (!this.orientationDetector) return;
             
+            this.eular.pitch = this.orientationDetector.getOrientation(e).beta || 0;
             this.eular.yaw = this.orientationDetector.getOrientation(e).gamma || 0;
 
             this.quaternion = toQuaternion(eularToRadian(this.eular));
@@ -48,7 +49,7 @@ export class DeviceSensor {
             if (!this.motionDetector) return;
             const eular: Eular = this.motionDetector.getEularAngle(e);
 
-            this.eular.pitch = eular.pitch;
+            // this.eular.pitch = eular.pitch;
             this.eular.roll = eular.roll;
 
             this.quaternion = toQuaternion(eularToRadian(this.eular));
