@@ -15,12 +15,15 @@ hand_estimation = Hand('model/hand_pose_model.pth')
 torch.device("mps")
 # print(f"Torch device: {torch.cuda.get_device_name()}")
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, 2000)
+    cap.set(4, 2000)
     while True:
         ret, oriImg = cap.read()
+        if oriImg is None:
+            continue
+        oriImg = cv2.rotate(oriImg, cv2.ROTATE_90_CLOCKWISE)
         candidate, subset = body_estimation(oriImg)
         canvas = copy.deepcopy(oriImg)
         canvas = util.draw_bodypose(canvas, candidate, subset)

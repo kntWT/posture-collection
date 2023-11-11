@@ -38,11 +38,14 @@ bad_frames = 0
 
 # Font type.
 font = cv2.FONT_HERSHEY_SIMPLEX
+font_scale = 3
+font_thickness = 10
 
 # Colors.
 blue = (255, 127, 0)
 red = (50, 50, 255)
 green = (127, 255, 0)
+black = (0, 0, 0)
 dark_blue = (127, 20, 0)
 light_green = (127, 233, 100)
 yellow = (0, 255, 255)
@@ -59,12 +62,13 @@ pose = mp_pose.Pose()
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 960)
+    cap.set(3, 2000)
+    cap.set(4, 2000)
 
     while True:
         # Capture frames.
         ret, image = cap.read()
+        image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
         if not ret:
             continue
         h, w = image.shape[:2]
@@ -106,9 +110,9 @@ if __name__ == "__main__":
         # Assist to align the camera to point at the side view of the person.
         # Offset threshold 30 is based on results obtained from analysis over 100 samples.
         if offset < 100:
-            cv2.putText(image, str(int(offset)) + ' Aligned', (w - 150, 30), font, 0.9, green, 2)
+            cv2.putText(image, str(int(offset)) + ' Aligned', (w - 150, 30), font, font_scale, green, font_thickness)
         else:
-            cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 150, 30), font, 0.9, red, 2)
+            cv2.putText(image, str(int(offset)) + ' Not Aligned', (w - 150, 30), font, font_scale, red, font_thickness)
 
         # Calculate angles.
         neck_inclination = findAngle(l_shldr_x, l_shldr_y, l_ear_x, l_ear_y)
@@ -138,23 +142,23 @@ if __name__ == "__main__":
             bad_frames = 0
             good_frames += 1
             
-            cv2.putText(image, angle_text_string, (10, 30), font, 0.9, light_green, 2)
-            cv2.putText(image, str(int(neck_inclination)), (l_shldr_x + 10, l_shldr_y), font, 0.9, light_green, 2)
-            cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, 0.9, light_green, 2)
+            cv2.putText(image, angle_text_string, (10, 100), font, font_scale, black, font_thickness)
+            cv2.putText(image, str(int(neck_inclination)), (l_shldr_x + 10, l_shldr_y), font, font_scale, black, font_thickness)
+            cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, font_scale, black, font_thickness)
 
             # Join landmarks.
-            cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), green, 4)
-            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), green, 4)
-            cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), green, 4)
-            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), green, 4)
+            cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), black, 4)
+            cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), black, 4)
+            cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), black, 4)
+            cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), black, 4)
 
         else:
             good_frames = 0
             bad_frames += 1
 
-            cv2.putText(image, angle_text_string, (10, 30), font, 0.9, red, 2)
-            cv2.putText(image, str(int(neck_inclination)), (l_shldr_x + 10, l_shldr_y), font, 0.9, red, 2)
-            cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, 0.9, red, 2)
+            cv2.putText(image, angle_text_string, (10, 100), font, font_scale, red, font_thickness)
+            cv2.putText(image, str(int(neck_inclination)), (l_shldr_x + 10, l_shldr_y), font, font_scale, red, font_thickness)
+            cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, font_scale, red, font_thickness)
 
             # Join landmarks.
             cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), red, 4)
@@ -169,10 +173,10 @@ if __name__ == "__main__":
         # # Pose time.
         # if good_time > 0:
         #     time_string_good = 'Good Posture Time : ' + str(round(good_time, 1)) + 's'
-        #     cv2.putText(image, time_string_good, (10, h - 20), font, 0.9, green, 2)
+        #     cv2.putText(image, time_string_good, (10, h - 20), font, font_scale, black, 2)
         # else:
         #     time_string_bad = 'Bad Posture Time : ' + str(round(bad_time, 1)) + 's'
-        #     cv2.putText(image, time_string_bad, (10, h - 20), font, 0.9, red, 2)
+        #     cv2.putText(image, time_string_bad, (10, h - 20), font, font_scale, red, 2)
 
         # If you stay in bad posture for more than 3 minutes (180s) send an alert.
         if bad_time > 180:
