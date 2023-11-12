@@ -13,7 +13,6 @@ import { Subscription, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Posture } from '../types/PostureScore';
 import { Eular, Quaternion } from '../types/Sensor';
-import { UserService } from '../services/user';
 
 @Component({
   selector: 'app-video',
@@ -44,7 +43,6 @@ export class VideoComponent implements OnInit, OnDestroy {
     private router: Router,
     private userFacade: UserFacade,
     private postureService: PostureService,
-    private userService : UserService
   ) {
     this.deviceSensor = new DeviceSensor();
   }
@@ -197,7 +195,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     const posture = await this.postPosture(true);
     if (posture === null) return;
 
-    this.userService.calibrate({
+    this.userFacade.calibrate({
       id: this.userId,
       // neckToNose: posture.neck_to_nose,
       // neckToNoseStandard: posture.standard_dist,

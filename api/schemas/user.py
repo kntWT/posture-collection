@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
@@ -16,8 +16,8 @@ class UserPost(BaseModel):
     password: str
 
 class UserCalibrateInternalPosture(BaseModel):
-    internal_posture_calibration_id: int
-    neck_to_nose_standard: Optional[float | None]
+    internal_posture_calibration_id: int = Field(alias="internalPostureCalibrationId")
+    neck_to_nose_standard: Optional[float | None] = Field(alias="neckToNoseStandard")
 
 class UserCalibrateExternalPosture(BaseModel):
     neck_angle_offset: float
