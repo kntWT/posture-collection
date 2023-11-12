@@ -28,6 +28,7 @@ async def update_estimation(path: str, file_name: str):
     try:
         if id == -1:
             return
+        print(f"{id}({file_name})", end=": ")
         image = cv2.imread(os.path.join(path, file_name))
         tasks: List[Any] = []
         tasks.append(estimate_body_pose(image, user_id, file_name))
