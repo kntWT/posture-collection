@@ -13,7 +13,6 @@ export type UserBasicInfo = {
 
 export type UserCalibrateion = {
     id: number;
-    neckToNose?: number | null;
     neckToNoseStandard?: number | null;
     internalPostureCalibrationId: number;
 }
