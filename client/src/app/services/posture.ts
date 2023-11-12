@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable, lastValueFrom } from 'rxjs';
 
-import { tap } from 'rxjs/operators';
+
 import { environment } from 'src/environments/environment';
 import { OrientationWithUserId } from '../types/Sensor';
+import { Posture } from '../types/PostureScore';
 
 @Injectable({
 	providedIn: "root",
@@ -18,12 +20,10 @@ export class PostureService {
     post(
         orientationWithUserId:( OrientationWithUserId & {createdAt: string, calibrateFlag: boolean} ),
         file: File
-    ) {
+    ): Promise<Posture> {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("orientation", JSON.stringify(orientationWithUserId))
-        return this.http
-            .post(`${this.endpoint}/`, fd)
-            .pipe(tap(posture => console.log(posture)))
+        return lastValueFrom(this.http.post<Posture>(`${this.endpoint}/`, fd))
     }
 }

@@ -3,16 +3,17 @@ import { NgIf } from '@angular/common';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-// import { PostureScore } from '../types/PostureScore';
+// import { PostureScore, Posture } from '../types/PostureScore';
 // import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
 // import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
 import { DeviceSensor } from './plugins/DeviceSensor';
 import { PostureService } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
-import { Subscription } from 'rxjs';
+import { Subscription, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Posture } from '../types/PostureScore';
 import { Eular, Quaternion } from '../types/Sensor';
+import { UserService } from '../services/user';
 
 @Component({
   selector: 'app-video',
@@ -35,7 +36,6 @@ export class VideoComponent implements OnInit, OnDestroy {
   allowOrientationPermission: boolean = false;
   allowMotionPermission: boolean = false;
 
-  calibrateFlag: boolean = false;
   subscriptions: Subscription[] = [];
 
   userId: number = 0;
@@ -44,6 +44,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     private router: Router,
     private userFacade: UserFacade,
     private postureService: PostureService,
+    private userService : UserService
   ) {
     this.deviceSensor = new DeviceSensor();
   }
@@ -173,40 +174,35 @@ export class VideoComponent implements OnInit, OnDestroy {
     return `${date.toLocaleString("jp-JP", {timeZone: "Asia/Tokyo"})}.${date.getMilliseconds()}`
   }
 
-  async postPosture(): Promise<void> {
+  async postPosture(calibrateFlag: boolean = false): Promise<Posture | null> {
     const now = new Date();
     const file = await this.getFrameAsFile(now);
-    if (file === null) return;
+    if (file === null) return null;
 
     const eular: Eular = this.deviceSensor?.eular || {pitch: 0, roll: 0, yaw: 0};
-    if (Object.values(eular).every(v => v === 0)) return;
+    // if (Object.values(eular).every(v => v === 0)) return;
 
-    const subscription = this.userFacade.user$.subscribe(user => {
-      const orientationWithUserId = {
-        userId: user.id,
-        alpha: eular.roll,
-        beta: eular.pitch,
-        gamma: eular.yaw,
-        calibrateFlag: this.calibrateFlag,
-        createdAt: this.dateFormat(now)
-      }
-      this.postureService.post(orientationWithUserId, file)
-        .subscribe(res => {
-          if (this.calibrateFlag) {
-            this.userFacade.calibrate({
-              id: this.userId,
-              internalPostureCalibrationId: (res as Posture).id
-            });
-          }
-          this.calibrateFlag = false;
-          this.removeAllSubscriptions();
-        });
-    });
-    this.subscriptions.push(subscription);
+    const orientationWithUserId = {
+      userId: this.userId,
+      alpha: eular.roll,
+      beta: eular.pitch,
+      gamma: eular.yaw,
+      calibrateFlag: calibrateFlag,
+      createdAt: this.dateFormat(now)
+    }
+    return  await this.postureService.post(orientationWithUserId, file);
   }
 
-  calibrate(): void {
-    this.calibrateFlag = true;
+  async calibrate():Promise<void> {
+    const posture = await this.postPosture(true);
+    if (posture === null) return;
+
+    this.userService.calibrate({
+      id: this.userId,
+      // neckToNose: posture.neck_to_nose,
+      // neckToNoseStandard: posture.standard_dist,
+      internalPostureCalibrationId: posture.id,
+    })
   }
 
   // async getPostureScore(): Promise<PostureScore | null> {
