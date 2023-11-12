@@ -40,6 +40,9 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     if len(subset) <= 0:
         print("cannot detected")
         return None
+    if len(subset[0]) >= 2:
+        print("othre people detected")
+        return None
     
     nose_index: int = int(subset[0][0])
     neck_index: int = int(subset[0][1])
