@@ -83,7 +83,7 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (this.videoEl?.paused) return;
     if (!this.isPlaying) return;
     if (this.openOverlay) return;
-    // this.postPosture();
+    this.postPosture();
   }
 
   public handlePlay(): void {
