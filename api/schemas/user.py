@@ -16,8 +16,8 @@ class UserPost(BaseModel):
     password: str
 
 class UserCalibrateInternalPosture(BaseModel):
-    internal_posture_calibration_id: int = Field(alias="internalPostureCalibrationId")
-    neck_to_nose_standard: Optional[float | None] = Field(alias="neckToNoseStandard")
+    internal_posture_calibration_id: int
+    neck_to_nose_standard: Optional[float | None]
 
 class UserCalibrateExternalPosture(BaseModel):
     neck_angle_offset: float

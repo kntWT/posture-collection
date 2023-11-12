@@ -45,7 +45,10 @@ async def update_estimation(path: str, file_name: str):
             if calibrate_flag:
                 calibrate_user = requests.put(
                     f"{API_URL}/user/calibration/internal-posture/{user_id}",
-                    json.dumps({"neck_to_nose_standard": neck_to_nose_standard})
+                    json.dumps({
+                        "internal_posture_calibration_id": id,
+                        "neck_to_nose_standard": neck_to_nose_standard
+                    })
                 )
                 calibrate_user.raise_for_status()
     except FileNotFoundError as e:
