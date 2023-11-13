@@ -2,6 +2,7 @@ import cv2
 import time
 import math as m
 import mediapipe as mp
+import os
 
 import requests
 from requests.exceptions import HTTPError
@@ -116,6 +117,7 @@ is_sending: bool = False
 
 if __name__ == "__main__":
     user = login()
+    os.makedirs(f"images/{user['id']}", exist_ok=True)
     cap = cv2.VideoCapture(0)
     cap.set(3, 2000)
     cap.set(4, 2000)
@@ -261,7 +263,7 @@ if __name__ == "__main__":
         if is_sending:
             now = datetime.datetime.now()
             file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"
-            cv2.imwrite(f"images/{file_name}.jpeg", image)
+            cv2.imwrite(f"images/{user['id']}/{file_name}.jpeg", image)
             post(neck_inclination, torso_inclination, now)
         if key & 0xFF == ord('q'):
             break
