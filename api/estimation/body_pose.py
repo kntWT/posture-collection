@@ -46,29 +46,14 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     
     nose_index: int = int(subset[0][0])
     neck_index: int = int(subset[0][1])
-    right_shoulder_index: int = int(subset[0][2])
-    left_shoulder_index: int = int(subset[0][5])
     right_eye_index: int = int(subset[0][14])
     left_eye_index: int = int(subset[0][15])
-    if nose_index == -1\
-        or neck_index == -1\
-        or right_shoulder_index == -1\
-        or left_shoulder_index == -1\
-        or right_eye_index == -1\
-        or left_eye_index == -1:
-        print(f"\
-            nose({nose_index}) or \
-            neck({neck_index}) or \
-            shoulders([{right_shoulder_index}, {left_shoulder_index}]) or \
-            eyes([{right_eye_index}, {left_eye_index}]) \
-            cannot detected"
-        )
+    if nose_index == -1 or neck_index == -1 or right_eye_index == -1 or left_eye_index == -1:
+        print(f"nose({nose_index}) or neck({neck_index}) or eyes([{right_eye_index}, {left_eye_index}]) cannot detected")
         return None
     
     nose: Point = parse_point(candidate[nose_index])
     neck: Point = parse_point(candidate[neck_index])
-    right_shoulder: Point = parse_point(candidate[right_shoulder_index])
-    left_shoulder: Point = parse_point(candidate[left_shoulder_index])
     right_eye: Point = parse_point(candidate[right_eye_index])
     left_eye: Point = parse_point(candidate[left_eye_index])
     # _subset: np.ndarray = np.array([[s if i < 2 else -1 for i, s in enumerate(subset[n])] for n in range(1)])
@@ -78,19 +63,10 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     save_path: str = f"{_image_dir}/{user_id}/neck"
     os.makedirs(save_path, exist_ok=True)
     if nose["score"] < 0.7 or \
-        neck["score"] < 0.2 or \
-        right_shoulder["score"] < 0.7 or \
-        left_shoulder["score"] < 0.7 or \
+        neck["score"] < 0.5 or \
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
-        print(f"\
-            nose: {nose['score']}, \
-            neck: {neck['score']}, \
-            right shoulder: {right_shoulder['score']}, \
-            left shoulder: {left_shoulder['score']}, \
-            right eye: {right_eye['score']}, \
-            left eye: {left_eye['score']}"
-        )
+        print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
         return {
             "nose_x": None,
             "nose_y": None,
