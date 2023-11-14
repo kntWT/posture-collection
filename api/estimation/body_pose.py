@@ -67,7 +67,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
         print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
-        cv2.imwrite(f"{save_path}/_{file_name}.jpg", canvas)
+        cv2.imwrite(f"{save_path}/_{file_name}", canvas)
         return {
             "nose_x": None,
             "nose_y": None,
@@ -77,7 +77,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
             "standard_dist": None
         }
 
-    cv2.imwrite(f"{save_path}/{file_name}.jpg", canvas)
+    cv2.imwrite(f"{save_path}/{file_name}", canvas)
     neck_to_nose: float = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
     standard_dist: float = math.dist([right_eye["x"], right_eye["y"]], [left_eye["x"], left_eye["y"]])
     return {
