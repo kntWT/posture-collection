@@ -63,10 +63,11 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     save_path: str = f"{_image_dir}/{user_id}/neck"
     os.makedirs(save_path, exist_ok=True)
     if nose["score"] < 0.7 or \
-        neck["score"] < 0.5 or \
+        neck["score"] < 0.2 or \
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
         print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
+        cv2.imwrite(f"{save_path}/_{file_name}.jpg", canvas)
         return {
             "nose_x": None,
             "nose_y": None,
