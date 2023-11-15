@@ -1,9 +1,22 @@
 import torch
-from torch import nn
 import numpy as np
 import requests
+import os
+
+from util import load_data_from_csvs, parse_torch
 
 API_URL = "http://localhost:8000"
+def fetch_data_from_api():
+    get_data = requests.get(f"{API_URL}/all-feature/")
+    get_data.raise_for_status()
+    data = get_data.json()
+    x = []
+    y = []
+    for d in data:
+        x_, y_ = parse_torch(d)
+        x.extend(x_)
+        y.extend(y_)
+    return x, y
 
 def linear_regression(dimension, out_features, iteration, lr, x, y):
     net = torch.nn.Linear(in_features=dimension, out_features=out_features, bias=False)  # ネットワークに線形結合モデルを設定
@@ -25,44 +38,10 @@ def linear_regression(dimension, out_features, iteration, lr, x, y):
  
     return net, losses
 
-def fetch_data():
-    get_data = requests.get(f"{API_URL}/all-feature/")
-    get_data.raise_for_status()
-    data = get_data.json()
-    x = []
-    y = []
-    for d in data:
-        neck_to_nose = d["neck_to_nose"]
-        standard_dist = d["standard_dist"]
-        normalized_dist = neck_to_nose / standard_dist
-        neck_to_nose_standard = d["neck_to_nose_standard"]
-        normalized_ratio = normalized_dist / neck_to_nose_standard
-        alpha = d["orientation_alpha"]
-        beta = d["orientation_beta"]
-        gamma = d["orientation_gamma"]
-        pitch = d["pitch"]
-        yaw = d["yaw"]
-        roll = d["roll"]
-        nose_x = d["nose_x"]
-        nose_y = d["nose_y"]
-        x.append([
-            normalized_ratio,
-            alpha,
-            beta,
-            gamma,
-            pitch,
-            yaw,
-            roll,
-            # nose_x,
-            # nose_y,
-        ])
-        neck_angle = d["neck_angle"]
-        neck_angle_offset = d["neck_angle_offset"]
-        y.append([neck_angle - neck_angle_offset])
-    return x, y
-
 if __name__ == "__main__":
-    x, y = fetch_data()
+    torch.device("mps")
+    # x, y = fetch_data_from_api()
+    x, y = load_data_from_csvs()
     x = torch.from_numpy(x).float()
     y = torch.from_numpy(y).float()
     x = torch.stack([torch.ones(100), x], 1)
