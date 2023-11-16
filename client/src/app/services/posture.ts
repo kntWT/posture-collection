@@ -17,7 +17,7 @@ export class PostureService {
 
 	private endpoint = `${environment.API_ENDPOINT}internal-posture`;
 
-    post(
+    postInternalPosture(
         orientationWithUserId:( OrientationWithUserId & {createdAt: string, calibrateFlag: boolean} ),
         file: File
     ): Promise<Posture> {
@@ -25,5 +25,21 @@ export class PostureService {
         fd.append("file", file);
         fd.append("orientation", JSON.stringify(orientationWithUserId))
         return lastValueFrom(this.http.post<Posture>(`${this.endpoint}/`, fd))
+    };
+
+    postOrientation(
+        orientationWithUserId:( OrientationWithUserId & {setId: number, createdAt: string, calibrateFlag: boolean} )
+    ): Promise<Posture> {
+        return lastValueFrom(this.http.post<Posture>(`${this.endpoint}/orientation/`, orientationWithUserId))
+    };
+
+    postVideo(
+        userId: number,
+        file: File
+    ): Promise<Posture> {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("user_id", JSON.stringify({id: userId}))
+        return lastValueFrom(this.http.post<Posture>(`${this.endpoint}/video/`, fd))
     }
 }

@@ -1,6 +1,11 @@
 <div cdkOverlayOrigin #trigger="cdkOverlayOrigin"></div>
 
 <div>
+    <div style="width: 100%; text-align: center;">
+        <button (click)="decrementSetId()" [disabled]="disableDecrementSetId()">-</button>
+        <span>{{ setId }}</span>
+        <button (click)="incrementSetId()" [disabled]="disableIncrementSetId()">+</button>
+    </div>
     <div  class="video-frame">
         <video
             id="video"
@@ -16,7 +21,7 @@
             </button>
         </div>
         <ng-template #play>
-            <button mat-icon-button (click)="handlePlay()">
+            <button mat-icon-button (click)="handlePlay()" [disabled]="!isPlayable">
                 <mat-icon>play_arrow</mat-icon>
             </button>
         </ng-template>

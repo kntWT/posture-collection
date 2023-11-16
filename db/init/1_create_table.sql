@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS internal_postures (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL DEFAULT 1,
-    file_name TEXT NOT NULL,
+    file_name TEXT,
+    set_id INT DEFAULT 0,
     orientation_alpha DOUBLE,
     orientation_beta DOUBLE, 
     orientation_gamma DOUBLE,
