@@ -9,6 +9,8 @@ from util import calculate_posture, font, font_scale, font_thickness, black, red
 NECK_ANGLE_OFFSET: float = 0
 user = {}
 is_sending: bool = False
+set_id: int = 1
+max_set_id: int = 5
 # ===============================================================================================#
 
 
@@ -41,6 +43,12 @@ if __name__ == "__main__":
         # press space key
         if key == 32:
             is_sending = not is_sending
+        # press left arrow key
+        elif key == 81:
+            set_id -= 1 if set_id >= 1 else 0
+        # press right arrow key
+        elif key == 83:
+            set_id += 1 if set_id < max_set_id else 0
         # press enter key
         elif key == 13:
             NECK_ANGLE_OFFSET = neck_inclination
