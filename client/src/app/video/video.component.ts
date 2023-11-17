@@ -44,7 +44,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   postTimer: number | null = null;
   videoFileName: string = "";
   setId: number = 1;
-  maxSetId: number = 5;
+  maxSetId: number = 6;
 
   readonly fps: number = 30;
 
@@ -260,7 +260,8 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   async calibrate():Promise<void> {
-    const posture = await this.postPosture(true);
+    // const posture = await this.postPosture(true);
+    const posture = await this.postOrientation(true);
     if (posture === null) return;
 
     this.userFacade.calibrate({
