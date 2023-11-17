@@ -43,7 +43,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   userId: number = 0;
   postTimer: number | null = null;
   videoFileName: string = "";
-  setId: number = 1;
+  setId: number = 0;
   maxSetId: number = 6;
 
   readonly fps: number = 30;
@@ -288,7 +288,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   // }
 
   incrementSetId(): void {
-    if (this.setId >= this.maxSetId) return;
+    if (this.disableIncrementSetId()) return;
     this.setId++;
   }
 
@@ -297,11 +297,11 @@ export class VideoComponent implements OnInit, OnDestroy {
   }
 
   decrementSetId(): void {
-    if (this.setId <= 1) return;
+    if (this.disableDecrementSetId()) return;
     this.setId--;
   }
 
   disableDecrementSetId(): boolean {
-    return this.setId <= 1;
+    return this.setId <= 0;
   }
 }
