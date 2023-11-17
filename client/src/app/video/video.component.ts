@@ -127,6 +127,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
     const blob = new Blob(this.videoChunks, {type: "video/mp4"});
     const file = new File([blob], `${this.videoFileName}.mp4`);
+    this.videoChunks = [];
 
     return file;
   }
