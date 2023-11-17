@@ -28,7 +28,7 @@ export class UserFormComponent implements OnInit {
 
   handleSubmit(): void {
     if (this.form.invalid) {
-      alert("情報が不足しています");
+      alert("ユーザ名とパスワードを半角英数字で入力してください");
       return;
     }
     this.submitEvent.emit(this.form.value as UserBasicInfo)
