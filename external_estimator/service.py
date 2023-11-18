@@ -1,7 +1,7 @@
 import requests
 from requests.exceptions import HTTPError
 from requests.auth import HTTPBasicAuth
-from typing import Dict, NoReturn
+from typing import List, Dict, NoReturn
 import json
 import datetime
 
@@ -34,14 +34,14 @@ def calibrate(user_id: int, offset: float) -> NoReturn:
     finally:
         return
 
-def post(user_id: int, neck_angle: float, torso_angle, now: datetime) -> NoReturn:
+def post(user_id: int, neck_angle: float, torso_angle: float, now: str) -> NoReturn:
     if user_id <= 0:
         return
     data = json.dumps({
         "user_id": user_id,
         "neck_angle": neck_angle,
         "torso_angle": torso_angle,
-        "created_at": now.strftime("%Y-%m-%d %H:%M:%S.%f")
+        "created_at": now
     })
     try:
         res = requests.post(f"{API_URL}/external-posture/", data)
@@ -50,3 +50,15 @@ def post(user_id: int, neck_angle: float, torso_angle, now: datetime) -> NoRetur
     except HTTPError as e:
         print(e)
         return
+    
+def post_list(data_list: List[Dict]) -> List[Dict]:
+    print(len(data_list))
+    if len(data_list) <= 0:
+        return []
+    try:
+        res = requests.post(f"{API_URL}/external-posture/list/", json.dumps(data_list))
+        res.raise_for_status()
+        return
+    except HTTPError as e:
+        print(e)
+        return []

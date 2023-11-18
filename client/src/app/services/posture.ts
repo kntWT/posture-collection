@@ -7,6 +7,13 @@ import { environment } from 'src/environments/environment';
 import { OrientationWithUserId } from '../types/Sensor';
 import { Posture } from '../types/PostureScore';
 
+export type PostOrientation = OrientationWithUserId &{
+    setId: number,
+    createdAt: string,
+    calibrateFlag: boolean,
+}
+
+
 @Injectable({
 	providedIn: "root",
 })
@@ -18,7 +25,7 @@ export class PostureService {
 	private endpoint = `${environment.API_ENDPOINT}internal-posture`;
 
     postInternalPosture(
-        orientationWithUserId:( OrientationWithUserId & {createdAt: string, calibrateFlag: boolean} ),
+        orientationWithUserId:PostOrientation,
         file: File
     ): Promise<Posture> {
         const fd = new FormData();
@@ -28,10 +35,16 @@ export class PostureService {
     };
 
     postOrientation(
-        orientationWithUserId:( OrientationWithUserId & {setId: number, createdAt: string, calibrateFlag: boolean} )
+        orientationWithUserId:PostOrientation
     ): Promise<Posture> {
         return lastValueFrom(this.http.post<Posture>(`${this.endpoint}/orientation/`, orientationWithUserId))
     };
+
+    postOrientations(
+        orientationsWithUserId:PostOrientation[]
+    ): Promise<Posture[]> {
+        return lastValueFrom(this.http.post<Posture[]>(`${this.endpoint}/orientation/list/`, orientationsWithUserId))
+    }
 
     postVideo(
         userId: number,

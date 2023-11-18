@@ -7,12 +7,13 @@ import { MatIconModule } from '@angular/material/icon';
 // import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
 // import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
 import { DeviceSensor } from './plugins/DeviceSensor';
-import { PostureService } from '../services/posture';
+import { PostureService, PostOrientation } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
 import { Subscription, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Posture } from '../types/PostureScore';
 import { Eular, Quaternion } from '../types/Sensor';
+import { set } from '../store/user/actions';
 
 @Component({
   selector: 'app-video',
@@ -45,6 +46,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   videoFileName: string = "";
   setId: number = 0;
   maxSetId: number = 6;
+  toPostOrientations: PostOrientation[] = [];
 
   readonly fps: number = 30;
 
@@ -105,19 +107,35 @@ export class VideoComponent implements OnInit, OnDestroy {
       this.postTimer = null;
     }
     this.postTimer = window.setInterval(() => {
-      this.postOrientation();
+      // this.postOrientation();
+      const now = new Date();
+      const eular: Eular = this.deviceSensor?.eular || {pitch: 0, roll: 0, yaw: 0};
+      if (Object.values(eular).every(v => v === 0)) return;
+
+      const orientationWithUserId = {
+        userId: this.userId,
+        setId: this.setId,
+        alpha: eular.roll,
+        beta: eular.pitch,
+        gamma: eular.yaw,
+        calibrateFlag: false,
+        createdAt: this.dateFormat(now)
+      };
+      this.toPostOrientations.push(orientationWithUserId);
     }, 1000 / this.fps);
     this.isPlaying = true;
     this.isPlayable = true;
   }
   
-  public handlePause(): void {
+  public async handlePause(): Promise<void> {
     this.videoEl?.pause();
     this.videoRecorder?.stop();
     if(this.postTimer) {
       window.clearInterval(this.postTimer);
       this.postTimer = null;
     }
+    await this.postureService.postOrientations(this.toPostOrientations);
+    this.toPostOrientations = [];
     this.isPlaying = false;
     this.isPlayable = false;
   }
@@ -234,6 +252,7 @@ export class VideoComponent implements OnInit, OnDestroy {
 
     const orientationWithUserId = {
       userId: this.userId,
+      setId: this.setId,
       alpha: eular.roll,
       beta: eular.pitch,
       gamma: eular.yaw,

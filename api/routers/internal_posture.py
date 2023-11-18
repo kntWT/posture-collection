@@ -48,7 +48,7 @@ async def post_internal_posture_only_orientation(orientation: str = Body(...), f
         file_name = file.filename,
     ))
     conn.commit()
-    return conn.execute(select(internal_posture_model).order_by(desc(internal_posture_model.c.created_at))).first()
+    return conn.execute(select(internal_posture_model).filter(internal_posture_model.c.created_at==internal_posture_only_orientation.created_at)).first()
 
 @internal_posture.post("/orientation/")
 async def post_orientation(orientation: InternalPostureOnlyOrientation) -> InternalPosture:
@@ -56,7 +56,15 @@ async def post_orientation(orientation: InternalPostureOnlyOrientation) -> Inter
         **orientation.dict(),
     ))
     conn.commit()
-    return conn.execute(select(internal_posture_model).order_by(desc(internal_posture_model.c.created_at))).first()
+    return conn.execute(select(internal_posture_model).filter(internal_posture_model.c.created_at==orientation.created_at)).first()
+
+@internal_posture.post("/orientation/list/")
+async def post_internal_posture_only_orientation_list(orientations: List[InternalPostureOnlyOrientation]) -> List[InternalPosture]:
+    conn.execute(internal_posture_model.insert().values(
+        [orientation.dict() for orientation in orientations]
+    ))
+    conn.commit()
+    return conn.execute(select(internal_posture_model).filter(internal_posture_model.c.created_at in [o.created_at for o in orientations])).fetchall()
 
 @internal_posture.post("/video/")
 async def post_video(user_id: str = Body(...), file: UploadFile = File(...)) -> int:

@@ -25,4 +25,12 @@ async def post_external_posture(external_posture: ExternalPosturePost) -> Extern
         **external_posture.dict(),
     ))
     conn.commit()
-    return conn.execute(select(external_posture_model).order_by(desc(external_posture_model.c.created_at))).first()
+    return conn.execute(select(external_posture_model).filter(external_posture_model.c.created_at==external_posture.created_at)).first()
+
+@external_posture.post("/list/")
+async def post_external_posture_list(external_postures: List[ExternalPosturePost]) -> List[ExternalPosture]:
+    conn.execute(external_posture_model.insert().values(
+        [external_posture.dict() for external_posture in external_postures]
+    ))
+    conn.commit()
+    return conn.execute(select(external_posture_model).filter(external_posture_model.c.created_at in [e.created_at for e in external_postures])).fetchall()

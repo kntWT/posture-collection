@@ -3,14 +3,15 @@ import mediapipe as mp
 import os
 import datetime
 
-from service import login, post, calibrate
+from service import login, post, post_list, calibrate
 from util import calculate_posture, font, font_scale, font_thickness, black, red
 
 NECK_ANGLE_OFFSET: float = 0
 user = {}
 is_sending: bool = False
 set_id: int = 1
-max_set_id: int = 5
+max_set_id: int = 6
+postures = []
 # ===============================================================================================#
 
 
@@ -30,19 +31,27 @@ if __name__ == "__main__":
         _, h = image.shape[:2]
         # whether send api or not
         if is_sending:
-            cv2.putText(image, "sending", (10, h - 20), font, font_scale, black, font_thickness)
+            cv2.putText(image, "recording", (10, h - 20), font, font_scale, black, font_thickness)
         else:
-            cv2.putText(image, "stopping", (10, h - 20), font, font_scale, red, font_thickness)
+            if len(postures) > 0:
+                cv2.putText(image, "posting", (10, h - 20), font, font_scale, black, font_thickness)
+            else:
+                cv2.putText(image, "stopping", (10, h - 20), font, font_scale, red, font_thickness)
 
         result = calculate_posture(image, NECK_ANGLE_OFFSET)
         if result is None:
             continue
         image, neck_inclination, torso_angle = result
 
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(5)
         # press space key
         if key == 32:
-            is_sending = not is_sending
+            is_sending = not is_sending and len(postures) == 0
+            if not is_sending:
+                # for posture in postures:
+                    # post(posture['user_id'], posture['neck_angle'], posture['torso_angle'], posture['created_at'])
+                post_list(postures)
+                postures = []
         # press left arrow key
         elif key == 81:
             set_id -= 1 if set_id >= 1 else 0
@@ -60,11 +69,16 @@ if __name__ == "__main__":
 
         if is_sending:
             now = datetime.datetime.now()
-            file_name: str = f"{now.year}_{now.month}_{now.day}_{now.hour}:{now.minute}:{now.second}.{now.microsecond}"[:-3]
+            file_name: str = now.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3]
             cv2.imwrite(f"images/{user['id']}/{file_name}.jpg", image)
-            post(user['id'], neck_angle, torso_angle, now)
+            # post(user['id'], neck_angle, torso_angle, now)
+            postures.append({"user_id": user['id'], "neck_angle": neck_angle, "torso_angle": torso_angle, "created_at": file_name})
         if key & 0xFF == ord('q'):
             break
+
+# for posture in postures:
+    # post(posture['user_id'], posture['neck_angle'], posture['torso_angle'], posture['created_at'])
+post_list(postures)
 
 cap.release()
 cv2.destroyAllWindows()
