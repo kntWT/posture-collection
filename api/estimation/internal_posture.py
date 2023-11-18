@@ -35,7 +35,8 @@ async def update_estimation(path: str, file_name: str):
 async def update_estimation_from_time(dir_path: str, time: str):
     data = fetch_closest_data(time)
     if len(data) <= 0:
-        raise FileNotFoundError(f"the matched data with file {time}.mp4 does not exist")
+        print(f"the matched data with file {time}.mp4 does not exist")
+        return
     id = int(data["id"])
     user_id = int(data["user_id"])
     calibrate_flag = data["calibrate_flag"]
@@ -74,6 +75,8 @@ def fetch_closest_data(time: str) -> Dict:
         get_row = requests.get(f"{API_URL}/internal-posture/timestamp/{time}")
         get_row.raise_for_status()
         data = get_row.json()
+        if data["file_name"] is not None:
+            return {}
         return data
     except HTTPError as e:
         print(e)
