@@ -1,10 +1,12 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import Optional
 
 class InternalPosture(BaseModel):
     id: int
     user_id: int
-    file_name: str
+    file_name: str | None
+    set_id: int | None
     orientation_alpha: float | None
     orientation_beta: float | None
     orientation_gamma: float | None
@@ -23,6 +25,7 @@ class InternalPosture(BaseModel):
 
 class InternalPostureOnlyOrientation(BaseModel):
     user_id: int = Field(alias="userId")
+    set_id: int = Field(alias="setId")
     orientation_alpha: float | None = Field(alias="alpha")
     orientation_beta: float | None = Field(alias="beta")
     orientation_gamma: float | None = Field(alias="gamma")
@@ -39,3 +42,6 @@ class InternalPostureOnlyEstimation(BaseModel):
     neck_y: float | None
     neck_to_nose: float | None
     standard_dist: float | None
+
+class InternalPosturePutFilename(BaseModel):
+    file_name: str

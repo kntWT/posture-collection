@@ -33,13 +33,12 @@ export class UserService {
     }
 
 	calibrate(props: UserCalibrateion) {
-		console.log(props)
 		return this.http.put<User>(
 			`${this.endpoint}/calibration/internal-posture/${props.id}`,
 			{
 				internal_posture_calibration_id: props.internalPostureCalibrationId,
 				neck_to_nose_standard: props.neckToNoseStandard ?? null
 			}
-		).pipe(tap(res => console.log(res)));
+		).pipe(tap(user => console.log('calibrate success name:', user.name)));
 	}
 }

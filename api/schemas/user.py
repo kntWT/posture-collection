@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
@@ -21,3 +21,6 @@ class UserCalibrateInternalPosture(BaseModel):
 
 class UserCalibrateExternalPosture(BaseModel):
     neck_angle_offset: float
+
+class UserId(BaseModel):
+    id: int

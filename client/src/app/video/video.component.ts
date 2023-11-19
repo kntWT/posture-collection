@@ -3,16 +3,17 @@ import { NgIf } from '@angular/common';
 import {OverlayModule} from '@angular/cdk/overlay';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-// import { PostureScore } from '../types/PostureScore';
+// import { PostureScore, Posture } from '../types/PostureScore';
 // import { DeviceOrientationDetector } from './plugins/DeviceOrientationDetector';
 // import { DeviceMotionDetector } from "./plugins/DeviceMotionDetector";
 import { DeviceSensor } from './plugins/DeviceSensor';
-import { PostureService } from '../services/posture';
+import { PostureService, PostOrientation } from '../services/posture';
 import { UserFacade } from '../store/user/facade';
-import { Subscription } from 'rxjs';
+import { Subscription, catchError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Posture } from '../types/PostureScore';
 import { Eular, Quaternion } from '../types/Sensor';
+import { set } from '../store/user/actions';
 
 @Component({
   selector: 'app-video',
@@ -24,21 +25,30 @@ import { Eular, Quaternion } from '../types/Sensor';
 
 export class VideoComponent implements OnInit, OnDestroy {
   videoEl: HTMLVideoElement | null = null;
+  videoRecorder: MediaRecorder | null = null;
+  videoChunks: Blob[] = [];
   width: number = 320;
   height: number = 640;
   // standardNeckLength: number | null = null;
   // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
   isPlaying: boolean = true;
+  isPlayable: boolean = false;
   deviceSensor: DeviceSensor | null = null;
   openOverlay: boolean = true;
   allowCameraPermission: boolean = false;
   allowOrientationPermission: boolean = false;
   allowMotionPermission: boolean = false;
 
-  calibrateFlag: boolean = false;
   subscriptions: Subscription[] = [];
 
   userId: number = 0;
+  postTimer: number | null = null;
+  videoFileName: string = "";
+  setId: number = 0;
+  maxSetId: number = 6;
+  toPostOrientations: PostOrientation[] = [];
+
+  readonly fps: number = 30;
 
   constructor(
     private router: Router,
@@ -83,17 +93,61 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (this.videoEl?.paused) return;
     if (!this.isPlaying) return;
     if (this.openOverlay) return;
-    this.postPosture();
+    // this.postPosture();
   }
 
   public handlePlay(): void {
     this.videoEl?.play();
+    this.videoRecorder?.start();
+    this.videoFileName = this.dateFormat(new Date())
+      .replaceAll("/", "-")
+      .replaceAll(" ", "_");
+    if (this.postTimer) {
+      window.clearInterval(this.postTimer);
+      this.postTimer = null;
+    }
+    this.postTimer = window.setInterval(() => {
+      // this.postOrientation();
+      const now = new Date();
+      const eular: Eular = this.deviceSensor?.eular || {pitch: 0, roll: 0, yaw: 0};
+      if (Object.values(eular).every(v => v === 0)) return;
+
+      const orientationWithUserId = {
+        userId: this.userId,
+        setId: this.setId,
+        alpha: eular.roll,
+        beta: eular.pitch,
+        gamma: eular.yaw,
+        calibrateFlag: false,
+        createdAt: this.dateFormat(now)
+      };
+      this.toPostOrientations.push(orientationWithUserId);
+    }, 1000 / this.fps);
     this.isPlaying = true;
+    this.isPlayable = true;
   }
   
-  public handlePause(): void {
+  public async handlePause(): Promise<void> {
     this.videoEl?.pause();
+    this.videoRecorder?.stop();
+    if(this.postTimer) {
+      window.clearInterval(this.postTimer);
+      this.postTimer = null;
+    }
+    await this.postureService.postOrientations(this.toPostOrientations);
+    this.toPostOrientations = [];
     this.isPlaying = false;
+    this.isPlayable = false;
+  }
+
+  writeVideo(): File | null {
+    if (this.videoChunks.length === 0) return null;
+
+    const blob = new Blob(this.videoChunks, {type: "video/mp4"});
+    const file = new File([blob], `${this.videoFileName}.mp4`);
+    this.videoChunks = [];
+
+    return file;
   }
 
   handleOpenOverlay(): void {
@@ -102,7 +156,7 @@ export class VideoComponent implements OnInit, OnDestroy {
       && this.allowOrientationPermission
       && this.allowMotionPermission
     );
-    if (this.openOverlay) {
+    if (!this.openOverlay) {
       this.handlePlay();
     }
   }
@@ -119,10 +173,25 @@ export class VideoComponent implements OnInit, OnDestroy {
         video: {
             facingMode: "user",
             width: {min: 0, max: this.width},
+            frameRate: this.fps,
         }
     });
     this.videoEl.srcObject = stream;
-    this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
+    this.videoRecorder = new MediaRecorder(stream, {
+      videoBitsPerSecond: 25000000,
+      mimeType: "video/mp4",
+    });
+    this.videoRecorder.ondataavailable = async (e: BlobEvent) => {
+      if (e.data.size > 0) {
+        this.videoChunks.push(e.data);
+        const vidoe: File | null = this.writeVideo();
+        if (vidoe === null) return;
+
+        await this.postureService.postVideo(this.userId, vidoe);
+        this.isPlayable = true;
+      }
+    };
+    // this.videoEl.addEventListener("timeupdate", (e: Event) => this.handleOnPlay(e));
     this.handlePause();
 
     this.allowCameraPermission = true;
@@ -173,40 +242,54 @@ export class VideoComponent implements OnInit, OnDestroy {
     return `${date.toLocaleString("jp-JP", {timeZone: "Asia/Tokyo"})}.${date.getMilliseconds()}`
   }
 
-  async postPosture(): Promise<void> {
+  async postPosture(calibrateFlag: boolean = false): Promise<Posture | null> {
     const now = new Date();
     const file = await this.getFrameAsFile(now);
-    if (file === null) return;
+    if (file === null) return null;
 
     const eular: Eular = this.deviceSensor?.eular || {pitch: 0, roll: 0, yaw: 0};
-    if (Object.values(eular).every(v => v === 0)) return;
+    if (Object.values(eular).every(v => v === 0)) return null;
 
-    const subscription = this.userFacade.user$.subscribe(user => {
-      const orientationWithUserId = {
-        userId: user.id,
-        alpha: eular.roll,
-        beta: eular.pitch,
-        gamma: eular.yaw,
-        calibrateFlag: this.calibrateFlag,
-        createdAt: this.dateFormat(now)
-      }
-      this.postureService.post(orientationWithUserId, file)
-        .subscribe(res => {
-          if (this.calibrateFlag) {
-            this.userFacade.calibrate({
-              id: this.userId,
-              internalPostureCalibrationId: (res as Posture).id
-            });
-          }
-          this.calibrateFlag = false;
-          this.removeAllSubscriptions();
-        });
-    });
-    this.subscriptions.push(subscription);
+    const orientationWithUserId = {
+      userId: this.userId,
+      setId: this.setId,
+      alpha: eular.roll,
+      beta: eular.pitch,
+      gamma: eular.yaw,
+      calibrateFlag: calibrateFlag,
+      createdAt: this.dateFormat(now)
+    }
+    return  await this.postureService.postInternalPosture(orientationWithUserId, file);
   }
 
-  calibrate(): void {
-    this.calibrateFlag = true;
+  async postOrientation(calibrateFlag: boolean = false): Promise<Posture | null> {
+    const now = new Date();
+    const eular: Eular = this.deviceSensor?.eular || {pitch: 0, roll: 0, yaw: 0};
+    if (Object.values(eular).every(v => v === 0)) return null;
+
+    const orientationWithUserId = {
+      userId: this.userId,
+      setId: this.setId,
+      alpha: eular.roll,
+      beta: eular.pitch,
+      gamma: eular.yaw,
+      calibrateFlag: calibrateFlag,
+      createdAt: this.dateFormat(now)
+    }
+    return  await this.postureService.postOrientation(orientationWithUserId);
+  }
+
+  async calibrate():Promise<void> {
+    // const posture = await this.postPosture(true);
+    const posture = await this.postOrientation(true);
+    if (posture === null) return;
+
+    this.userFacade.calibrate({
+      id: this.userId,
+      // neckToNose: posture.neck_to_nose,
+      // neckToNoseStandard: posture.standard_dist,
+      internalPostureCalibrationId: posture.id,
+    })
   }
 
   // async getPostureScore(): Promise<PostureScore | null> {
@@ -222,4 +305,22 @@ export class VideoComponent implements OnInit, OnDestroy {
   //   this.userFacade.calibrate
   //   console.log("standard: " + this.standardNeckLength);
   // }
+
+  incrementSetId(): void {
+    if (this.disableIncrementSetId()) return;
+    this.setId++;
+  }
+
+  disableIncrementSetId(): boolean {
+    return this.setId >= this.maxSetId;
+  }
+
+  decrementSetId(): void {
+    if (this.disableDecrementSetId()) return;
+    this.setId--;
+  }
+
+  disableDecrementSetId(): boolean {
+    return this.setId <= 0;
+  }
 }

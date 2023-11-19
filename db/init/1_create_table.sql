@@ -17,7 +17,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS internal_postures (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL DEFAULT 1,
-    file_name TEXT NOT NULL,
+    file_name TEXT,
+    set_id INT DEFAULT 0,
     orientation_alpha DOUBLE,
     orientation_beta DOUBLE, 
     orientation_gamma DOUBLE,
@@ -32,7 +33,7 @@ CREATE TABLE IF NOT EXISTS internal_postures (
     standard_dist DOUBLE,
     calibrate_flag BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP(3) DEFAULT NULL,
-    updeted_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+    updated_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
 );
 
 CREATE TABLE IF NOT EXISTS external_postures (

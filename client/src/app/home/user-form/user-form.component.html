@@ -2,13 +2,13 @@
     <form [formGroup]="form">
         <h4>{{ title }}</h4>
         <mat-form-field>
-            <mat-label>ユーザネーム</mat-label>
-            <input matInput required formControlName="name">
+            <mat-label>ユーザネーム（半角英数字）</mat-label>
+            <input matInput required pattern="^[0-9a-zA-Z]+$" formControlName="name">
         </mat-form-field>
         
         <mat-form-field>
-            <mat-label>パスワード</mat-label>
-            <input matInput required type="password" formControlName="password">
+            <mat-label>パスワード（半角英数字）</mat-label>
+            <input matInput required type="password" pattern="^[0-9a-zA-Z]+$" formControlName="password">
         </mat-form-field>
     </form>
     <button mat-raised-button color="primary" (click)="handleSubmit()" class="my-3">
