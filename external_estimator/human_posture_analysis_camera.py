@@ -61,7 +61,7 @@ if __name__ == "__main__":
         # press enter key
         elif key == 13:
             NECK_ANGLE_OFFSET = neck_inclination
-            calibrate(neck_inclination)
+            calibrate(user["id"], neck_inclination)
         neck_angle = neck_inclination - NECK_ANGLE_OFFSET
 
         # Display.
