@@ -4,14 +4,8 @@ import { Observable, lastValueFrom } from 'rxjs';
 
 
 import { environment } from 'src/environments/environment';
-import { OrientationWithUserId } from '../types/Sensor';
+import { PostOrientation } from '../types/Sensor';
 import { Posture } from '../types/PostureScore';
-
-export type PostOrientation = OrientationWithUserId &{
-    setId: number,
-    createdAt: string,
-    calibrateFlag: boolean,
-}
 
 
 @Injectable({
@@ -43,6 +37,9 @@ export class PostureService {
     postOrientations(
         orientationsWithUserId:PostOrientation[]
     ): Promise<Posture[]> {
+        if (orientationsWithUserId.length === 0) {
+            return Promise.resolve([]);
+        }
         return lastValueFrom(this.http.post<Posture[]>(`${this.endpoint}/orientation/list/`, orientationsWithUserId))
     }
 

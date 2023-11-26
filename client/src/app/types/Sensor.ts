@@ -29,6 +29,12 @@ export type OrientationWithUserId = {
     userId: number
 } & Orientation;
 
+export type PostOrientation = OrientationWithUserId &{
+    setId: number,
+    createdAt: string,
+    calibrateFlag: boolean,
+}
+
 export type Motion = {
     x: number;
     y: number;
