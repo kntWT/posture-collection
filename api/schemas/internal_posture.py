@@ -1,6 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from datetime import datetime
-from typing import Optional
 
 class InternalPosture(BaseModel):
     id: int
@@ -20,8 +19,13 @@ class InternalPosture(BaseModel):
     neck_to_nose: float | None
     standard_dist: float | None
     calibrate_flag: bool
-    created_at: datetime | None
-    updated_at: datetime
+    created_at: datetime | str | None
+    updated_at: datetime | str
+
+    @validator("created_at", "updated_at", pre=True)
+    def format_timestamp(cls, v: datetime) -> str:
+        return v.strftime("%Y-%m-%d_%H:%M:%S.%f")
+
 
 class InternalPostureOnlyOrientation(BaseModel):
     user_id: int = Field(alias="userId")

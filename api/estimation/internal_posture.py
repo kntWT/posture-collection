@@ -9,38 +9,40 @@ from typing import List, Dict, Any, NoReturn
 import numpy as np
 import datetime
 
-from config.env import original_image_dir
 from estimation.body_pose import estimate_body_pose
 from estimation.head_pose import estimate_head_pose
 
 API_URL: str = "http://localhost:4201"
     
-async def update_estimation(path: str, file_name: str):
+def update_estimation(path: str, file_name: str):
     data = fetch_data_from_filename(file_name)
-    id = int(data["id"])
-    user_id = int(data["user_id"])
-    calibrate_flag = data["calibrate_flag"]
-    try:
-        if id == -1:
-            return
-        print(f"{id}({file_name})", end=": ")
-        image = cv2.imread(os.path.join(path, file_name))
-        face_feature, head_pose = await estimate_from_image(image, user_id, file_name)
-        put_estimation(id, user_id, calibrate_flag, face_feature, head_pose)
-        
-    except FileNotFoundError as e:
-        print(e)
-        return
+    if len(data) <= 0:
+        print(f"the matched data with file \"{file_name}\" does not exist")
+    else:
+        return update_estimation_from_data(data, path, file_name)
 
-async def update_estimation_from_time(dir_path: str, time: str):
+def update_estimation_from_time_based_on_fps(dir_path: str, time: str):
     data = fetch_closest_data(time)
     if len(data) <= 0:
         print(f"the matched data with file {time}.mp4 does not exist")
-        return
+    else:
+        return update_estimation_from_data(data, dir_path, f"{time}.jpg")
+
+def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, file_names: List[str]) -> List[Any]:
+    frame_count: int = len(file_names)
+    data_list: List[Dict] = fetch_data_list_from_start_time(start_time, frame_count)
+    tasks: List[Any] = []
+    if len(data_list) <= 0 or len(data_list) < frame_count:
+        print(f"the matched data with file {start_time}.mp4 does not exist")
+        return []
+    for data, file_name in zip(data_list, file_names):
+        tasks.append(update_estimation_from_data(data, dir_path, file_name))
+    return tasks
+        
+async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str) -> NoReturn:
     id = int(data["id"])
     user_id = int(data["user_id"])
     calibrate_flag = data["calibrate_flag"]
-    file_name = f"{time}.jpg"
     try:
         if id == -1:
             return
@@ -49,16 +51,20 @@ async def update_estimation_from_time(dir_path: str, time: str):
         face_feature, head_pose = await estimate_from_image(image, user_id, file_name)
         put_estimation(id, user_id, calibrate_flag, face_feature, head_pose)
         update_file_name(id, file_name)
+        print("done")
         
     except FileNotFoundError as e:
         print(e)
         return
 
 async def estimate_from_image(image: np.ndarray, user_id: int, file_name: str):
-    tasks: List[Any] = []
-    tasks.append(estimate_body_pose(image, user_id, file_name))
-    tasks.append(estimate_head_pose(image, user_id, file_name))
-    return await asyncio.gather(*tasks)
+    # tasks: List[Any] = []
+    # tasks.append(estimate_body_pose(image, user_id, file_name))
+    # tasks.append(estimate_head_pose(image, user_id, file_name))
+    # return await asyncio.gather(*tasks)
+    face_feature = await estimate_body_pose(image, user_id, file_name)
+    head_pose = await estimate_head_pose(image, user_id, file_name)
+    return face_feature, head_pose
 
 def fetch_data_from_filename(file_name: str) -> Dict:
     try:
@@ -76,11 +82,26 @@ def fetch_closest_data(time: str) -> Dict:
         get_row.raise_for_status()
         data = get_row.json()
         if data["file_name"] is not None:
-            return {}
+            current_time: datetime.datetime = datetime.datetime.strptime(time+"000", "%Y-%m-%d_%H:%M:%S.%f")
+            matched_time: datetime.datetime = datetime.datetime.strptime(data["file_name"][:-4]+"000", "%Y-%m-%d_%H:%M:%S.%f")
+            data_time: datetime.datetime = datetime.datetime.strptime(data["created_at"], "%Y-%m-%d_%H:%M:%S.%f")
+            if abs((current_time-data_time).total_seconds()) >= abs((matched_time-data_time).total_seconds()):
+                return {}
+
         return data
     except HTTPError as e:
         print(e)
         return {}
+
+def fetch_data_list_from_start_time(start_time: str, frame_count) -> List[Dict]:
+    try:
+        get_row = requests.get(f"{API_URL}/internal-posture/timestamp/list/{start_time}/{frame_count}")
+        get_row.raise_for_status()
+        data = get_row.json()
+        return data
+    except HTTPError as e:
+        print(e)
+        return []
     
 def update_file_name(id: int, file_name: str) -> NoReturn:
     try:

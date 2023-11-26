@@ -1,11 +1,12 @@
 from fastapi import File, UploadFile, Body
-from datetime import datetime
+# from datetime import datetime
+import datetime
 from fastapi import APIRouter
 from models.internal_posture import internal_posture as internal_posture_model
 from config.db import conn
 from schemas.internal_posture import InternalPosture, InternalPostureOnlyOrientation, InternalPostureOnlyEstimation, InternalPosturePutFilename
 from schemas.user import UserId
-from sqlalchemy import select, asc, desc, func, text
+from sqlalchemy import select, asc, desc, func, text, between, and_
 from typing import List
 from util import save_file
 from util import JsonParser
@@ -26,15 +27,32 @@ async def get_internal_posture_by_id(id: int) -> InternalPosture:
 
 @internal_posture.get("/filename/{file_name}")
 async def get_internal_posture_by_filename(file_name: str) -> InternalPosture:
-    return conn.execute(select(internal_posture_model).where(internal_posture_model.c.file_name == file_name)).first()
+    return conn.execute(select(internal_posture_model).
+                with_hint(internal_posture_model, "FORCE INDEX (file_name_index)", 'mysql').
+                where(internal_posture_model.c.file_name == file_name)).first()
 
 @internal_posture.get("/timestamp/{time}")
 async def get_closest_internal_posture_by_timestamp(time: str) -> InternalPosture:
-    timestamp: datetime = datetime.strptime(time + "000", "%Y-%m-%d_%H:%M:%S.%f")
+    timestamp: datetime.datetime = datetime.datetime.strptime(time + "000", "%Y-%m-%d_%H:%M:%S.%f")
     return conn.execute(select(internal_posture_model).
+                # with_hint(internal_posture_model, "FORCE INDEX (created_at_index)", 'mysql').
+                filter(between(internal_posture_model.c.created_at, timestamp - datetime.timedelta(microseconds=40000), timestamp + datetime.timedelta(microseconds=40000))).
                 order_by(asc(func.abs(
                     func.timestampdiff(text("MICROSECOND"), internal_posture_model.c.created_at, timestamp)))
                 )).first()
+
+@internal_posture.get("/timestamp/list/{start_time}/{limit}")
+async def get_internal_posture_list_from_start_time(start_time: str, limit: int) -> List[InternalPosture]:
+    first_data: InternalPosture = await get_closest_internal_posture_by_timestamp(start_time)
+    if first_data is None:
+        return []
+    first_id: int = first_data.id
+    return conn.execute(select(internal_posture_model).
+                filter(and_(internal_posture_model.c.id >= first_id, internal_posture_model.c.calibrate_flag == False)).
+                # order_by(asc(internal_posture_model.c.created_at)).
+                order_by(asc(internal_posture_model.c.id)).
+                limit(limit)
+            ).fetchall()
 
 parser = JsonParser(InternalPostureOnlyOrientation)
 
