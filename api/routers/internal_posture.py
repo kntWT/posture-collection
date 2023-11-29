@@ -7,6 +7,7 @@ from config.db import conn
 from schemas.internal_posture import InternalPosture, InternalPostureOnlyOrientation, InternalPostureOnlyEstimation, InternalPosturePutFilename
 from schemas.user import UserId
 from sqlalchemy import select, asc, desc, func, text, between, and_
+from sqlalchemy.sql.expression import bindparam
 from typing import List
 from util import save_file
 from util import JsonParser
@@ -78,6 +79,8 @@ async def post_orientation(orientation: InternalPostureOnlyOrientation) -> Inter
 
 @internal_posture.post("/orientation/list/")
 async def post_internal_posture_only_orientation_list(orientations: List[InternalPostureOnlyOrientation]) -> List[InternalPosture]:
+    if len(orientations) <= 0:
+        return []
     conn.execute(internal_posture_model.insert().values(
         [orientation.dict() for orientation in orientations]
     ))
@@ -100,6 +103,17 @@ async def update_estimation(id: int, internal_posture_only_estimation: InternalP
     conn.commit()
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()
 
+@internal_posture.put("/list/")
+async def update_estimations(internal_posture_only_estimations: List[InternalPostureOnlyEstimation]) -> List[InternalPosture]:
+    if len(internal_posture_only_estimations) <= 0:
+        return []
+    stmt = internal_posture_model.update().values(
+        {key: bindparam(key) for key in internal_posture_only_estimations[0].dict().keys()}
+    ).where(internal_posture_model.c.id==bindparam("id"))
+    conn.execute(stmt, [estimation.dict() for estimation in internal_posture_only_estimations])
+    conn.commit()
+    return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [e.id for e in internal_posture_only_estimations])).fetchall()
+
 @internal_posture.put("/filename/{id}")
 async def update_estimation_by_filename(id: int, file_name: InternalPosturePutFilename) -> InternalPosture:
     conn.execute(internal_posture_model.update().values(
@@ -107,3 +121,14 @@ async def update_estimation_by_filename(id: int, file_name: InternalPosturePutFi
     ).where(internal_posture_model.c.id==id))
     conn.commit()
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()
+
+@internal_posture.put("/filename/list/")
+async def update_estimations_by_filename(file_names: List[InternalPosturePutFilename]) -> List[InternalPosture]:
+    if len(file_names) <= 0:
+        return []
+    stmt = internal_posture_model.update().values(
+        {key: bindparam(key) for key in file_names[0].dict().keys()}
+    ).where(internal_posture_model.c.id==bindparam("id"))
+    conn.execute(stmt, [file_name.dict() for file_name in file_names])
+    conn.commit()
+    return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [f.id for f in file_names])).fetchall()

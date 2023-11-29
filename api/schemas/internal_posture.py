@@ -37,6 +37,7 @@ class InternalPostureOnlyOrientation(BaseModel):
     created_at: datetime | str = Field(alias="createdAt")
 
 class InternalPostureOnlyEstimation(BaseModel):
+    id: int | None
     pitch: float | None
     yaw: float | None
     roll: float | None
@@ -48,4 +49,5 @@ class InternalPostureOnlyEstimation(BaseModel):
     standard_dist: float | None
 
 class InternalPosturePutFilename(BaseModel):
+    id: int | None
     file_name: str

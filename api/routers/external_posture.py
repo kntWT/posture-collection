@@ -29,6 +29,7 @@ async def post_external_posture(external_posture: ExternalPosturePost) -> Extern
 
 @external_posture.post("/list/")
 async def post_external_posture_list(external_postures: List[ExternalPosturePost]) -> List[ExternalPosture]:
+
     conn.execute(external_posture_model.insert().values(
         [external_posture.dict() for external_posture in external_postures]
     ))

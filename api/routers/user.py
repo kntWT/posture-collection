@@ -6,6 +6,7 @@ from models.user import user as user_model
 from config.db import conn
 from schemas.user import User, UserPost, UserCalibrateInternalPosture, UserCalibrateExternalPosture
 from sqlalchemy import select, desc
+from sqlalchemy.sql.expression import bindparam
 from typing import List
 
 user = APIRouter(prefix="/user")
@@ -55,6 +56,17 @@ async def update_user_calibration(id: int, user: UserCalibrateInternalPosture) -
     ).where(user_model.c.id==id))
     conn.commit()
     return  conn.execute(select(user_model).filter(user_model.c.id==id)).first()
+
+@user.put("/calibration/internal-posture/list/")
+async def update_user_calibration_list(user_list: List[UserCalibrateInternalPosture]) -> List[User]:
+    if len(user_list) <= 0:
+        return []
+    stmt = user_model.update().values(
+        {key: bindparam(key) for key in user_list[0].dict().keys()}
+    ).where(user_model.c.id==bindparam("id"))
+    conn.execute(stmt, [user.dict() for user in user_list])
+    conn.commit()
+    return  conn.execute(select(user_model).filter(user_model.c.id in [user.id for user in user_list])).fetchall()
 
 @user.put("/calibration/external-posture/{id}")
 async def update_user_calibration(id: int, user: UserCalibrateExternalPosture) -> User:

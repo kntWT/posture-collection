@@ -21,14 +21,14 @@ def update_estimation(path: str, file_name: str):
     else:
         return update_estimation_from_data(data, path, file_name)
 
-def update_estimation_from_time_based_on_fps(dir_path: str, time: str):
+def update_estimation_from_time_based_on_fps(dir_path: str, time: str, execute: bool = True):
     data = fetch_closest_data(time)
     if len(data) <= 0:
         print(f"the matched data with file {time}.mp4 does not exist")
     else:
-        return update_estimation_from_data(data, dir_path, f"{time}.jpg")
+        return update_estimation_from_data(data, dir_path, f"{time}.jpg", execute)
 
-def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, file_names: List[str]) -> List[Any]:
+def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, file_names: List[str], execute: bool = True) -> List[Any]:
     frame_count: int = len(file_names)
     data_list: List[Dict] = fetch_data_list_from_start_time(start_time, frame_count)
     tasks: List[Any] = []
@@ -36,26 +36,32 @@ def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, f
         print(f"the matched data with file {start_time}.mp4 does not exist")
         return []
     for data, file_name in zip(data_list, file_names):
-        tasks.append(update_estimation_from_data(data, dir_path, file_name))
+        tasks.append(update_estimation_from_data(data, dir_path, file_name, execute))
     return tasks
         
-async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str) -> NoReturn:
+async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str, execute: bool = True) -> NoReturn:
     id = int(data["id"])
     user_id = int(data["user_id"])
     calibrate_flag = data["calibrate_flag"]
     try:
         if id == -1:
-            return
+            return None
         print(f"{id}({file_name})", end=": ")
         image = cv2.imread(os.path.join(dir_path, file_name))
         face_feature, head_pose = await estimate_from_image(image, user_id, file_name)
-        put_estimation(id, user_id, calibrate_flag, face_feature, head_pose)
-        update_file_name(id, file_name)
+        to_put_estimation = put_estimation(id, user_id, calibrate_flag, face_feature, head_pose, execute)
+        to_put_file_name = put_file_name(id, file_name, execute)
         print("done")
+
+        if execute or to_put_estimation is None or to_put_file_name is None:
+            return None
+        else:
+            to_put_estimation.update(to_put_file_name)
+            return to_put_estimation
         
     except FileNotFoundError as e:
         print(e)
-        return
+        return None
 
 async def estimate_from_image(image: np.ndarray, user_id: int, file_name: str):
     # tasks: List[Any] = []
@@ -103,7 +109,10 @@ def fetch_data_list_from_start_time(start_time: str, frame_count) -> List[Dict]:
         print(e)
         return []
     
-def update_file_name(id: int, file_name: str) -> NoReturn:
+def put_file_name(id: int, file_name: str, execute: bool = True) -> NoReturn:
+    if not execute:
+        return {"file_name": {"id": id, "file_name": file_name}}
+
     try:
         put_row = requests.put(f"{API_URL}/internal-posture/filename/{id}", json.dumps({"file_name": file_name}))
         put_row.raise_for_status()
@@ -112,25 +121,32 @@ def update_file_name(id: int, file_name: str) -> NoReturn:
         print(e)
         return
 
-def put_estimation(id: int, user_id: int, calibrate_flag: bool, face_feature: Dict, head_pose: Dict):
+def put_estimation(id: int, user_id: int, calibrate_flag: bool, face_feature: Dict, head_pose: Dict, execute: bool = True):
     if face_feature is None or head_pose is None:
-            pass
-    else:
-        put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
-        put_feature.raise_for_status()
-        if face_feature["neck_to_nose"] is None:
-            return
-        neck_to_nose_standard = face_feature["neck_to_nose"] / face_feature["standard_dist"]
-        if calibrate_flag:
-            calibrate_user = requests.put(
-                f"{API_URL}/user/calibration/internal-posture/{user_id}",
-                json.dumps({
-                    "internal_posture_calibration_id": id,
-                    "neck_to_nose_standard": neck_to_nose_standard
-                })
-            )
-            calibrate_user.raise_for_status()
-    return
+        return
+    
+    if not execute:
+        calibration = None if not calibrate_flag or face_feature["neck_to_nose"] is None \
+            else {"id": user_id, "internal_posture_calibration_id": id, "neck_to_nose_standard": face_feature["neck_to_nose"] / face_feature["standard_dist"]}
+        return {
+            "internal_posture": {"id": id, **face_feature, **head_pose},
+            "calibration":calibration
+        } if calibration is not None else {"internal_posture": {"id": id, **face_feature, **head_pose}}
+    
+    put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
+    put_feature.raise_for_status()
+    if face_feature["neck_to_nose"] is None:
+        return
+    neck_to_nose_standard = face_feature["neck_to_nose"] / face_feature["standard_dist"]
+    if calibrate_flag:
+        calibrate_user = requests.put(
+            f"{API_URL}/user/calibration/internal-posture/{user_id}",
+            json.dumps({
+                "internal_posture_calibration_id": id,
+                "neck_to_nose_standard": neck_to_nose_standard
+            })
+        )
+        calibrate_user.raise_for_status()
 
 if __name__ == "__main__":
     update_estimation(sys.argv[1])
