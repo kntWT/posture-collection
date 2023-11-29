@@ -26,6 +26,23 @@ async def get_internal_posutres_by_user_id(user_id: int) -> List[InternalPosture
 async def get_internal_posture_by_id(id: int) -> InternalPosture:
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id==id)).first()
 
+@internal_posture.get("/{user_id}/estimated/")
+async def get_internal_posture_by_id_estimated(user_id: int) -> List[InternalPosture]:
+    return conn.execute(select(internal_posture_model).
+                        where(and_(
+                            internal_posture_model.c.user_id==user_id,
+                            and_(
+                                internal_posture_model.c.file_name.isnot(None),
+                                and_(internal_posture_model.c.orientation_alpha.isnot(None),
+                                    and_(internal_posture_model.c.pitch.isnot(None),
+                                        internal_posture_model.c.neck_to_nose.isnot(None)
+                                    )
+                                )
+                            )
+                        )).
+                        order_by(asc(internal_posture_model.c.id))
+            ).fetchall()
+
 @internal_posture.get("/filename/{file_name}")
 async def get_internal_posture_by_filename(file_name: str) -> InternalPosture:
     return conn.execute(select(internal_posture_model).

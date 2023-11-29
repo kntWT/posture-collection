@@ -7,6 +7,8 @@ from typing import Any, NoReturn
 import os
 import json
 
+import requests
+
 image_dir: str = os.environ.get("IMAGE_DIR")
 
 def save_file(file, path: str = "") -> str:
@@ -85,3 +87,15 @@ def load_data_from_csv(file_name: str):
             data.append({cols[i] : float(data_list[i]) for i in range(len(cols))})
     
     return parse_torch(data)
+
+def fetch_data_and_to_csv(url: str, file_name: str):
+    get_data = requests.get(url)
+    get_data.raise_for_status()
+    data = get_data.json()
+    header = ",".join(data[0].keys())
+    lines = [header]
+    for d in data:
+        line = ",".join([str(v) for v in d.values()])
+        lines.append(line)
+    with open(file_name, mode="w") as f:
+        f.write("\n".join(lines))

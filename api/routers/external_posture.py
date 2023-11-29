@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 from models.external_posture import external_posture as external_posture_model
+from models.user import user as user_model
 from config.db import conn
-from schemas.external_posture import ExternalPosture, ExternalPosturePost
-from sqlalchemy import select, desc
+from schemas.external_posture import ExternalPosture, ExternalPosturePost, ExternalPostureWithUser
+from sqlalchemy import select, asc, desc
 from typing import List
 
 external_posture = APIRouter(prefix="/external-posture")
@@ -18,6 +19,14 @@ async def get_external_posutres_by_user_id(user_id: int) -> List[ExternalPosture
 @external_posture.get("/{id}")
 async def get_external_posture_by_id(id: int) -> ExternalPosture:
     return conn.execute(select(external_posture_model).where(external_posture_model.c.id==id)).first()
+
+@external_posture.get("/{user_id}/joined/")
+async def get_external_posture_by_user_id_joined(user_id: int) -> List[ExternalPostureWithUser]:
+    return conn.execute(select(external_posture_model, user_model).
+                        where(external_posture_model.c.user_id==user_id).
+                        join(user_model, user_model.c.id==external_posture_model.c.user_id).
+                        order_by(asc(external_posture_model.c.id))
+            ).fetchall()
 
 @external_posture.post("/")
 async def post_external_posture(external_posture: ExternalPosturePost) -> ExternalPosture:
