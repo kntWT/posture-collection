@@ -29,6 +29,7 @@ export class VideoComponent implements OnInit, OnDestroy {
   height: number = 640;
   // standardNeckLength: number | null = null;
   // postureScore: PostureScore = {neckLength: -1, headAngle: -1};
+  calibrateFlag: boolean = false;
   isPlaying: boolean = true;
   isPlayable: boolean = false;
   deviceSensor: DeviceSensor | null = null;
@@ -90,7 +91,8 @@ export class VideoComponent implements OnInit, OnDestroy {
     if (!this.isPlaying) return;
     if (this.showOverlay) return;
 
-    this.addToPostOrientations();
+    this.addToPostOrientations(this.calibrateFlag);
+    this.calibrateFlag = false;
   }
 
   public handlePlay(): void {
@@ -114,9 +116,10 @@ export class VideoComponent implements OnInit, OnDestroy {
   writeVideo(chunks: Blob[]): File | null {
     const blob = new Blob(chunks, {type: "video/mp4"});
     // const blob = new Blob(chunks, {type: "video/webm"});
-    const fileName = this.toPostOrientations[0].createdAt
+    const fileName = this.toPostOrientations?.[0]?.createdAt
       .replaceAll("/", "-")
-      .replaceAll(" ", "_");
+      .replaceAll(" ", "_")
+      ?? "_error";
     const file = new File([blob], `${fileName}.mp4`);
 
     return file;
@@ -257,15 +260,16 @@ export class VideoComponent implements OnInit, OnDestroy {
 
   async calibrate():Promise<void> {
     // const posture = await this.postPosture(true);
-    const posture = await this.postOrientation(true);
-    if (posture === null) return;
+    // if (posture === null) return;
 
-    this.userFacade.calibrate({
-      id: this.userId,
-      // neckToNose: posture.neck_to_nose,
-      // neckToNoseStandard: posture.standard_dist,
-      internalPostureCalibrationId: posture.id,
-    })
+    this.calibrateFlag = true;
+
+    // this.userFacade.calibrate({
+    //   id: this.userId,
+    //   neckToNose: posture.neck_to_nose,
+    //   neckToNoseStandard: posture.standard_dist,
+    //   internalPostureCalibrationId: posture.id,
+    // })
   }
 
   // async getPostureScore(): Promise<PostureScore | null> {
