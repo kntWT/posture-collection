@@ -37,6 +37,9 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     if img is None:
         return None
     candidate, subset = body_estimation(img)
+    canvas: np.ndarray = copy.deepcopy(img)
+    canvas = util.draw_bodypose(canvas, candidate, subset)
+    save_path: str = f"{_image_dir}/{user_id}/neck"
     if len(subset) <= 0:
         print("cannot detected")
         return None
@@ -50,6 +53,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     left_eye_index: int = int(subset[0][15])
     if nose_index == -1 or neck_index == -1 or right_eye_index == -1 or left_eye_index == -1:
         print(f"nose({nose_index}) or neck({neck_index}) or eyes([{right_eye_index}, {left_eye_index}]) cannot detected")
+        cv2.imwrite(f"{save_path}/_{file_name}", canvas)
         return None
     
     nose: Point = parse_point(candidate[nose_index])
@@ -58,24 +62,14 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     left_eye: Point = parse_point(candidate[left_eye_index])
     # _subset: np.ndarray = np.array([[s if i < 2 else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
-    canvas: np.ndarray = copy.deepcopy(img)
-    canvas = util.draw_bodypose(canvas, candidate, subset)
-    save_path: str = f"{_image_dir}/{user_id}/neck"
     os.makedirs(save_path, exist_ok=True)
     if nose["score"] < 0.7 or \
-        neck["score"] < 0.2 or \
+        neck["score"] < 0.15 or \
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
         print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
         cv2.imwrite(f"{save_path}/_{file_name}", canvas)
-        return {
-            "nose_x": None,
-            "nose_y": None,
-            "neck_x": None,
-            "neck_y": None,
-            "neck_to_nose": None,
-            "standard_dist": None
-        }
+        return None
 
     cv2.imwrite(f"{save_path}/{file_name}", canvas)
     neck_to_nose: float = math.dist([nose["x"], nose["y"]], [neck["x"], neck["y"]])
