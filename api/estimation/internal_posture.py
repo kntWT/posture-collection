@@ -39,29 +39,31 @@ def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, f
         tasks.append(update_estimation_from_data(data, dir_path, file_name, execute))
     return tasks
         
-async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str, execute: bool = True) -> NoReturn:
+async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str, execute: bool = True):
     id = int(data["id"])
     user_id = int(data["user_id"])
     calibrate_flag = data["calibrate_flag"]
     try:
         if id == -1:
-            return None
+            return
         print(f"{id}({file_name})", end=": ")
         image = cv2.imread(os.path.join(dir_path, file_name))
         face_feature, head_pose = await estimate_from_image(image, user_id, file_name)
+        if face_feature is None or head_pose is None:
+            return
         to_put_estimation = put_estimation(id, user_id, calibrate_flag, face_feature, head_pose, execute)
         to_put_file_name = put_file_name(id, file_name, execute)
         print("done")
 
-        if execute or to_put_estimation is None or to_put_file_name is None:
-            return None
+        if execute:
+            return
         else:
             to_put_estimation.update(to_put_file_name)
             return to_put_estimation
         
     except FileNotFoundError as e:
         print(e)
-        return None
+        return
 
 async def estimate_from_image(image: np.ndarray, user_id: int, file_name: str):
     # tasks: List[Any] = []
@@ -114,7 +116,7 @@ def put_file_name(id: int, file_name: str, execute: bool = True) -> NoReturn:
         return {"file_name": {"id": id, "file_name": file_name}}
 
     try:
-        put_row = requests.put(f"{API_URL}/internal-posture/filename/{id}", json.dumps({"file_name": file_name}))
+        put_row = requests.put(f"{API_URL}/internal-posture/filename/{id}", json.dumps({"id": id, "file_name": file_name}))
         put_row.raise_for_status()
         return
     except HTTPError as e:
@@ -133,7 +135,7 @@ def put_estimation(id: int, user_id: int, calibrate_flag: bool, face_feature: Di
             "calibration":calibration
         } if calibration is not None else {"internal_posture": {"id": id, **face_feature, **head_pose}}
     
-    put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({**face_feature, **head_pose}))
+    put_feature = requests.put(f"{API_URL}/internal-posture/{id}", json.dumps({"id": id, **face_feature, **head_pose}))
     put_feature.raise_for_status()
     if face_feature["neck_to_nose"] is None:
         return
