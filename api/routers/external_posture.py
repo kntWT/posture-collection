@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from models.external_posture import external_posture as external_posture_model
 from models.user import user as user_model
 from config.db import conn
+from util import to_csv
 from schemas.external_posture import ExternalPosture, ExternalPosturePost, ExternalPostureWithUser
 from sqlalchemy import select, asc, desc
 from typing import List
@@ -38,9 +39,15 @@ async def post_external_posture(external_posture: ExternalPosturePost) -> Extern
 
 @external_posture.post("/list/")
 async def post_external_posture_list(external_postures: List[ExternalPosturePost]) -> List[ExternalPosture]:
-
+    if len(external_postures) == 0:
+        return []
+    dict_list = [external_posture.dict() for external_posture in external_postures]
     conn.execute(external_posture_model.insert().values(
-        [external_posture.dict() for external_posture in external_postures]
+        dict_list
     ))
     conn.commit()
+    first_data = external_postures[0]
+    user_id = first_data.user_id
+    created_at = first_data.created_at.replace("/", "-").replace(" ", "_")
+    to_csv(dict_list, f"data/input/external_posture/{user_id}/{created_at}.csv")
     return conn.execute(select(external_posture_model).filter(external_posture_model.c.created_at in [e.created_at for e in external_postures])).fetchall()

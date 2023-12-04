@@ -4,6 +4,8 @@ import datetime
 from fastapi import APIRouter
 from models.internal_posture import internal_posture as internal_posture_model
 from config.db import conn
+from util import to_csv
+from . import jst
 from schemas.internal_posture import InternalPosture, InternalPostureOnlyOrientation, InternalPostureOnlyEstimation, InternalPosturePutFilename
 from schemas.user import UserId
 from sqlalchemy import select, asc, desc, func, text, between, and_
@@ -98,10 +100,15 @@ async def post_orientation(orientation: InternalPostureOnlyOrientation) -> Inter
 async def post_internal_posture_only_orientation_list(orientations: List[InternalPostureOnlyOrientation]) -> List[InternalPosture]:
     if len(orientations) <= 0:
         return []
+    dict_list = [orientation.dict() for orientation in orientations]
     conn.execute(internal_posture_model.insert().values(
-        [orientation.dict() for orientation in orientations]
+        dict_list
     ))
     conn.commit()
+    first_data = orientations[0]
+    user_id = first_data.user_id
+    created_at = first_data.created_at.replace("/", "-").replace(" ", "_")
+    to_csv(dict_list, f"data/input/internal_posture/orientation/{user_id}/{created_at}.csv")
     return conn.execute(select(internal_posture_model).filter(internal_posture_model.c.created_at in [o.created_at for o in orientations])).fetchall()
 
 @internal_posture.post("/video/")
@@ -124,11 +131,16 @@ async def update_estimation(id: int, internal_posture_only_estimation: InternalP
 async def update_estimations(internal_posture_only_estimations: List[InternalPostureOnlyEstimation]) -> List[InternalPosture]:
     if len(internal_posture_only_estimations) <= 0:
         return []
+    dict_list = [estimation.dict() for estimation in internal_posture_only_estimations]
     stmt = internal_posture_model.update().values(
         {key: bindparam(key) for key in internal_posture_only_estimations[0].dict().keys()}
     ).where(internal_posture_model.c.id==bindparam("id"))
-    conn.execute(stmt, [estimation.dict() for estimation in internal_posture_only_estimations])
+    conn.execute(stmt, dict_list)
     conn.commit()
+    first_data = internal_posture_only_estimations[0]
+    user_id = first_data.user_id
+    created_at = first_data.created_at.replace("/", "-").replace(" ", "_")
+    to_csv(dict_list, f"data/input/internal_posture/estimation/{user_id}/{created_at}.csv")
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [e.id for e in internal_posture_only_estimations])).fetchall()
 
 @internal_posture.put("/filename/{id}")
@@ -143,9 +155,14 @@ async def update_estimation_by_filename(id: int, file_name: InternalPosturePutFi
 async def update_estimations_by_filename(file_names: List[InternalPosturePutFilename]) -> List[InternalPosture]:
     if len(file_names) <= 0:
         return []
+    dict_list = [file_name.dict() for file_name in file_names]
     stmt = internal_posture_model.update().values(
         {key: bindparam(key) for key in file_names[0].dict().keys()}
     ).where(internal_posture_model.c.id==bindparam("id"))
-    conn.execute(stmt, [file_name.dict() for file_name in file_names])
+    conn.execute(stmt, dict_list)
     conn.commit()
+    first_data = file_names[0]
+    user_id = first_data.user_id
+    now = datetime.datetime.now(jst).strftime("%Y-%m-%d_%H:%M:%S.%f")
+    to_csv(dict_list, f"data/input/internal_posture/file_name/{user_id}/{now}.csv")
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [f.id for f in file_names])).fetchall()

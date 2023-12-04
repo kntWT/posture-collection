@@ -55,7 +55,7 @@ def get_tasks_from_time_based_on_order(cap, dir_path: str, file_name: str) -> Li
         file_name: str = now.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3] + ".jpg"
         cv2.imwrite(os.path.join(dir_path, file_name), frame)
         file_names.append(file_name)
-    tasks.extend(update_estimation_from_time_based_on_order(dir_path, start_time.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3], file_names))
+    tasks.extend(update_estimation_from_time_based_on_order(dir_path, start_time.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3], file_names, False))
     return tasks
 
 if __name__ == "__main__":
@@ -66,9 +66,9 @@ if __name__ == "__main__":
         file_names = list(filter(lambda x: video_reg.search(x), os.listdir(dir_path)))
         for file_name in file_names:
             cap = cv2.VideoCapture(os.path.join(dir_path, file_name))
-            to_complete.extend(get_tasks_from_time_based_on_fps(cap, dir_path, file_name))
-            to_complete = list(filter(lambda x: x is not None, to_complete))
-            # to_complete.extend(get_tasks_from_time_based_on_order(cap, dir_path, file_name))
+            # to_complete.extend(get_tasks_from_time_based_on_fps(cap, dir_path, file_name))
+            # to_complete = list(filter(lambda x: x is not None, to_complete))
+            to_complete.extend(get_tasks_from_time_based_on_order(cap, dir_path, file_name))
         loop = asyncio.get_event_loop()
         results = loop.run_until_complete(asyncio.gather(*to_complete))
         to_puts = {

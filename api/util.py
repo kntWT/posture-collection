@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import numpy as np
 import torch
 
-from typing import Any, NoReturn
+from typing import Any, NoReturn, List, Dict
 import os
 import json
 
@@ -92,6 +92,17 @@ def fetch_data_and_to_csv(url: str, file_name: str):
     get_data = requests.get(url)
     get_data.raise_for_status()
     data = get_data.json()
+    header = ",".join(data[0].keys())
+    lines = [header]
+    for d in data:
+        line = ",".join([str(v) for v in d.values()])
+        lines.append(line)
+    with open(file_name, mode="w") as f:
+        f.write("\n".join(lines))
+
+def to_csv(data: List[Dict], file_name: str):
+    dir: str = "/".join(file_name.split("/")[:-1])
+    os.makedirs(dir, exist_ok=True)
     header = ",".join(data[0].keys())
     lines = [header]
     for d in data:
