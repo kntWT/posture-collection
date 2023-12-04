@@ -41,5 +41,5 @@ CREATE TABLE IF NOT EXISTS external_postures (
     user_id INT NOT NULL DEFAULT 1,
     neck_angle DOUBLE NOT NULL,
     torso_angle DOUBLE NOT NULL,
-    created_at TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)
+    created_at TIMESTAMP(3) DEFAULT NULL
 );
