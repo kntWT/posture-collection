@@ -26,7 +26,7 @@
             </button>
         </ng-template>
 
-        <div *ngIf="isPlaying">
+        <div *ngIf="isPlaying && setId === 0">
             <button mat-raised-button (click)="calibrate()">
                 キャリブレーション
             </button>
