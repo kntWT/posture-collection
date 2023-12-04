@@ -63,12 +63,11 @@ if __name__ == "__main__":
             result = calculate_posture(image, NECK_ANGLE_OFFSET)
             if result is None:
                 continue
-            image, neck_inclination, torso_angle = result
+            image, neck_angle, torso_angle = result
             # press enter key
             if key == 13:
-                NECK_ANGLE_OFFSET = neck_inclination
-                calibrate(neck_inclination)
-            neck_angle = neck_inclination - NECK_ANGLE_OFFSET
+                NECK_ANGLE_OFFSET = neck_angle
+                calibrate(neck_angle)
         # Display.
         cv2.imshow('MediaPipe Pose', image)
         if key & 0xFF == ord('q'):

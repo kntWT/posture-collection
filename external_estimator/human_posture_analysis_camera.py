@@ -41,7 +41,7 @@ if __name__ == "__main__":
         result = calculate_posture(image, NECK_ANGLE_OFFSET)
         if result is None:
             continue
-        image, neck_inclination, torso_angle = result
+        image, neck_angle, torso_angle = result
 
         key = cv2.waitKey(5)
         # press space key
@@ -60,9 +60,8 @@ if __name__ == "__main__":
             set_id += 1 if set_id < max_set_id else 0
         # press enter key
         elif key == 13:
-            NECK_ANGLE_OFFSET = neck_inclination
-            calibrate(user["id"], neck_inclination)
-        neck_angle = neck_inclination - NECK_ANGLE_OFFSET
+            NECK_ANGLE_OFFSET = neck_angle
+            calibrate(user["id"], neck_angle)
 
         # Display.
         cv2.imshow('MediaPipe Pose', image)
@@ -72,7 +71,7 @@ if __name__ == "__main__":
             file_name: str = now.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3]
             cv2.imwrite(f"images/{user['id']}/{file_name}.jpg", image)
             # post(user['id'], neck_angle, torso_angle, now)
-            postures.append({"user_id": user['id'], "neck_angle": neck_angle, "torso_angle": torso_angle, "created_at": file_name})
+            postures.append({"user_id": user['id'], "neck_angle": neck_angle + NECK_ANGLE_OFFSET, "torso_angle": torso_angle, "created_at": file_name})
         if key & 0xFF == ord('q'):
             break
 
