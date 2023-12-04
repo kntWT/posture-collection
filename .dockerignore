@@ -1,3 +1,8 @@
-node_modules
-dist
-.venv
+**/.env
+**/node_modules
+**/dist
+**/.venv
+**/images
+**/data
+**/.git
+**/__pycache__
