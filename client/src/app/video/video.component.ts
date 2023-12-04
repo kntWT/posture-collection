@@ -65,6 +65,7 @@ export class VideoComponent implements OnInit, OnDestroy {
         this.userFacade.user$.subscribe(user => {
           if (user.id !== 0) {
             this.userId = user.id;
+            this.removeAllSubscriptions();
             return;
           }
           if (alert("ログインしてから再度アクセスしてください．") === undefined) {
@@ -73,7 +74,10 @@ export class VideoComponent implements OnInit, OnDestroy {
           }
         })
       });
-      this.subscriptions.push(subscription)
+      this.subscriptions.push(subscription);
+      if (this.userId !== 0) {
+        this.removeAllSubscriptions();
+      }
   }
 
   ngOnDestroy(): void {
