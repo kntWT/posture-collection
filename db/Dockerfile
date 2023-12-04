@@ -1,4 +1,4 @@
-FROM --platform=linux/x86_64 mysql:8.0
+FROM --platform=linux/x86_64 mysql:8.0.35-debian
 
 ENV TZ=Asia/Tokyo
 COPY ./init/* /docker-entrypoint-initdb.d/
