@@ -17,6 +17,8 @@ postures = []
 
 if __name__ == "__main__":
     user = login()
+    NECK_ANGLE_OFFSET = float(user['neck_angle_offset'])
+    print(f"NECK_ANGLE_OFFSET: {NECK_ANGLE_OFFSET}")
     os.makedirs(f"images/{user['id']}", exist_ok=True)
     cap = cv2.VideoCapture(0)
     cap.set(3, 2000)
@@ -62,6 +64,7 @@ if __name__ == "__main__":
         elif key == 13:
             NECK_ANGLE_OFFSET = neck_angle
             calibrate(user["id"], neck_angle)
+            print(f"NECK_ANGLE_OFFSET: {NECK_ANGLE_OFFSET}")
 
         # Display.
         cv2.imshow('MediaPipe Pose', image)

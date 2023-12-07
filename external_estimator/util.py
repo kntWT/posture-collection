@@ -32,7 +32,7 @@ bad_frames = 0
 
 # Font type.
 font = cv2.FONT_HERSHEY_SIMPLEX
-font_scale = 3
+font_scale = 5
 font_thickness = 10
 
 # Colors.
@@ -119,26 +119,14 @@ def calculate_posture(image, neck_angle_offset: float = 0.0):
 
     # Determine whether good posture or bad posture.
     # The threshold angles have been set based on intuition.
-    if neck_angle < 40 and torso_inclination < 10:
-        cv2.putText(image, angle_text_string, (10, 100), font, font_scale, black, font_thickness)
-        cv2.putText(image, str(int(neck_angle)), (l_shldr_x + 10, l_shldr_y), font, font_scale, black, font_thickness)
-        cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, font_scale, black, font_thickness)
+    cv2.putText(image, angle_text_string, (10, 100), font, font_scale, red, font_thickness)
+    cv2.putText(image, str(int(neck_angle)), (l_shldr_x + 10, l_shldr_y), font, font_scale, red, font_thickness)
+    cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, font_scale, red, font_thickness)
 
-        # Join landmarks.
-        cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), black, 4)
-        cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), black, 4)
-        cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), black, 4)
-        cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), black, 4)
-
-    else:
-        cv2.putText(image, angle_text_string, (10, 100), font, font_scale, red, font_thickness)
-        cv2.putText(image, str(int(neck_angle)), (l_shldr_x + 10, l_shldr_y), font, font_scale, red, font_thickness)
-        cv2.putText(image, str(int(torso_inclination)), (l_hip_x + 10, l_hip_y), font, font_scale, red, font_thickness)
-
-        # Join landmarks.
-        cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), red, 4)
-        cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), red, 4)
-        cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), red, 4)
-        cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), red, 4)
+    # Join landmarks.
+    cv2.line(image, (l_shldr_x, l_shldr_y), (l_ear_x, l_ear_y), red, 4)
+    cv2.line(image, (l_shldr_x, l_shldr_y), (l_shldr_x, l_shldr_y - expand_offset), red, 4)
+    cv2.line(image, (l_hip_x, l_hip_y), (l_shldr_x, l_shldr_y), red, 4)
+    cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), red, 4)
 
     return image, neck_angle, torso_inclination
