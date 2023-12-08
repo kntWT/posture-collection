@@ -1,6 +1,7 @@
 import math as m
 import mediapipe as mp
 import cv2
+from cv2 import aruco
 
 # Calculate distance
 def findDistance(x1, y1, x2, y2):
@@ -55,7 +56,7 @@ pose = mp_pose.Pose()
 # Calculate posture. returns None if not detected.
 # image: np.ndarray
 # return: image, neck_angle, torso_angle | None
-def calculate_posture(image, neck_angle_offset: float = 0.0):
+def calculate_posture_by_mediapipe(image, neck_angle_offset: float = 0.0):
     # Convert the BGR image to RGB.
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     keypoints = pose.process(image)
@@ -130,3 +131,58 @@ def calculate_posture(image, neck_angle_offset: float = 0.0):
     cv2.line(image, (l_hip_x, l_hip_y), (l_hip_x, l_hip_y - expand_offset), red, 4)
 
     return image, neck_angle, torso_inclination
+
+
+dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+# id = 0 -> ear
+# id = 1 -> shoulder
+# id = 2 -> hip
+def calculate_posture_by_marker(image, neck_angle_offset: float = 0):
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(image, dictionary)
+    if ids is None:
+        return None
+    aruco.drawDetectedMarkers(image, corners, ids, yellow)
+    positions = [None, None, None]
+    for id, corner in zip(ids.flatten(), corners):
+        if id >= 3:
+            continue
+        positions[id] = list(map(int, corner[0].mean(axis=0).tolist()))
+    if positions[0] is None or positions[1] is None:
+        return None
+    neck_inclination = findAngle(positions[0][0], positions[0][1], positions[1][0], positions[1][1])
+    neck_angle = neck_inclination - neck_angle_offset
+    torso_inclination = 0
+    if positions[2] is not None:
+        torso_inclination = findAngle(positions[1][0], positions[1][1], positions[2][0], positions[2][1])
+
+    # Draw landmarks.
+    cv2.circle(image, (positions[0][0], positions[0][1]), 7, yellow, -1)
+    cv2.circle(image, (positions[1][0], positions[1][1]), 7, yellow, -1)
+    if positions[2] is not None:
+        cv2.circle(image, (positions[2][0], positions[2][1]), 7, yellow, -1)
+
+    # Let's take y - coordinate of P3 100px above x1,  for display elegance.
+    # Although we are taking y = 0 while calculating angle between P1,P2,P3.
+    cv2.circle(image, (positions[1][0], positions[1][1] - expand_offset), 7, yellow, -1)
+    if positions[2] is not None:
+        cv2.circle(image, (positions[2][0], positions[2][1] - expand_offset), 7, pink, -1)
+
+    # Put text, Posture and angle inclination.
+    # Text string for display.
+    angle_text_string = 'Neck : ' + str(int(neck_angle)) + '  Torso : ' + str(int(torso_inclination))
+
+    # Determine whether good posture or bad posture.
+    # The threshold angles have been set based on intuition.
+    cv2.putText(image, angle_text_string, (10, 100), font, font_scale, red, font_thickness)
+    cv2.putText(image, str(int(neck_angle)), (positions[1][0] + 10, positions[1][1]), font, font_scale, red, font_thickness)
+    if positions[2] is not None:
+        cv2.putText(image, str(int(torso_inclination)), (positions[2][0] + 10, positions[2][1]), font, font_scale, red, font_thickness)
+
+    # Join landmarks.
+    cv2.line(image, positions[0], positions[1], red, 4)
+    cv2.line(image, (positions[1][0], positions[1][1]), (positions[1][0], positions[1][1] - expand_offset), red, 4)
+    if positions[2] is not None:
+        cv2.line(image, positions[1], positions[2], red, 4)
+        cv2.line(image, (positions[2][0], positions[2][1]), (positions[2][0], positions[2][1] - expand_offset), red, 4)
+
+    return image, {"neck_angle": neck_angle, "torso_angle": torso_inclination}

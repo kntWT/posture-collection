@@ -6,7 +6,7 @@ import os
 import datetime
 
 from service import login, calibrate
-from util import calculate_posture
+from util import calculate_posture_by_mediapipe
 
 NECK_ANGLE_OFFSET: float = 0
 user = {}
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         if is_sending:
             video_output.write(image)
         else:
-            result = calculate_posture(image, NECK_ANGLE_OFFSET)
+            result = calculate_posture_by_mediapipe(image, NECK_ANGLE_OFFSET)
             if result is None:
                 continue
             image, neck_angle, torso_angle = result

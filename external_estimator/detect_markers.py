@@ -1,10 +1,12 @@
 import cv2
+
+import cv2
 import mediapipe as mp
 import os
 import datetime
 
 from service import login, post, post_list, calibrate
-from util import calculate_posture_by_mediapipe, font, font_scale, font_thickness, black, red
+from util import calculate_posture_by_marker, font, font_scale, font_thickness, black, red
 
 NECK_ANGLE_OFFSET: float = 0
 user = {}
@@ -42,12 +44,12 @@ if __name__ == "__main__":
             else:
                 cv2.putText(image, "stopping", (10, h - 20), font, font_scale, red, font_thickness)
 
-        result = calculate_posture_by_mediapipe(image, NECK_ANGLE_OFFSET)
+        result = calculate_posture_by_marker(image, NECK_ANGLE_OFFSET)
+        key = cv2.waitKey(1)
         if result is None:
+            cv2.imshow('Marker Detector', image)
             continue
-        image, neck_angle, torso_angle = result
-
-        key = cv2.waitKey(5)
+        image, angles = result
         # press space key
         if key == 32:
             is_sending = not is_sending and len(postures) == 0
@@ -64,12 +66,12 @@ if __name__ == "__main__":
             set_id += 1 if set_id < max_set_id else 0
         # press enter key
         elif key == 13:
-            NECK_ANGLE_OFFSET = neck_angle
-            calibrate(user["id"], neck_angle)
+            NECK_ANGLE_OFFSET = angles["neck_angle"]
+            calibrate(user["id"], angles["neck_angle"])
             print(f"NECK_ANGLE_OFFSET: {NECK_ANGLE_OFFSET}")
 
         # Display.
-        cv2.imshow('MediaPipe Pose', image)
+        cv2.imshow('Marker Detector', image)
 
         if is_sending:
             now = datetime.datetime.now()
@@ -77,13 +79,13 @@ if __name__ == "__main__":
             cv2.imwrite(f"images/{user['id']}/original/{file_name}.jpg", frame)
             cv2.imwrite(f"images/{user['id']}/estimated/{file_name}.jpg", image)
             # post(user['id'], neck_angle, torso_angle, now)
-            postures.append({"user_id": user['id'], "neck_angle": neck_angle + NECK_ANGLE_OFFSET, "torso_angle": torso_angle, "created_at": file_name})
+            postures.append({"user_id": user['id'], "neck_angle": angles["neck_angle"] + NECK_ANGLE_OFFSET, "torso_angle": angles["torso_angle"], "created_at": file_name})
         if key & 0xFF == ord('q'):
             break
 
 # for posture in postures:
     # post(posture['user_id'], posture['neck_angle'], posture['torso_angle'], posture['created_at'])
-post_list(postures)
+# post_list(postures)
 
 cap.release()
 cv2.destroyAllWindows()
