@@ -10,13 +10,14 @@ import requests
 from requests.exceptions import HTTPError
 
 from estimation.internal_posture import update_estimation_from_time_based_on_fps, update_estimation_from_time_based_on_order
+from utils import fetch_data_and_to_csv, to_csv
+from data_formatter import join_data_with_timestamp
 
 user_id_reg = re.compile(r"\d+")
 video_reg = re.compile(r".(mp4|webm)")
 
 targets = sys.argv[1:]
 
-to_complete = []
 API_URL: str = "http://localhost:4201"
 
 def get_tasks_from_time_based_on_fps(cap, dir_path: str, file_name: str) -> List[Any]:
@@ -58,10 +59,11 @@ def get_tasks_from_time_based_on_order(cap, dir_path: str, file_name: str) -> Li
     tasks.extend(update_estimation_from_time_based_on_order(dir_path, start_time.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3], file_names, False))
     return tasks
 
-if __name__ == "__main__":
+async def main():
     for user_id in os.listdir("images/") if len(targets) <= 0 else targets:
         if not user_id_reg.search(user_id):
             continue
+        to_complete = []
         dir_path = f"images/{user_id}/original"
         file_names = list(filter(lambda x: video_reg.search(x), os.listdir(dir_path)))
         for file_name in file_names:
@@ -69,8 +71,9 @@ if __name__ == "__main__":
             # to_complete.extend(get_tasks_from_time_based_on_fps(cap, dir_path, file_name))
             # to_complete = list(filter(lambda x: x is not None, to_complete))
             to_complete.extend(get_tasks_from_time_based_on_order(cap, dir_path, file_name))
-        loop = asyncio.get_event_loop()
-        results = loop.run_until_complete(asyncio.gather(*to_complete))
+        # loop = asyncio.get_event_loop()
+        # results = loop.run_until_complete(asyncio.gather(*to_complete))
+        results = await asyncio.gather(*[asyncio.ensure_future(task) for task in to_complete])
         to_puts = {
             "internal_posture": [],
             "calibration": [],
@@ -93,4 +96,12 @@ if __name__ == "__main__":
                 put_file_name.raise_for_status()
         except HTTPError as e:
             print(e)
+        
+        internal_posture = await fetch_data_and_to_csv(f"{API_URL}/internal-posture/{user_id}/estimated/", f"data/db_output/{user_id}_internal_postures.csv")
+        external_posture = await fetch_data_and_to_csv(f"{API_URL}/external-posture/{user_id}/joined/", f"data/db_output/{user_id}_external_postures.csv")
+        joined_data = join_data_with_timestamp(internal_posture, external_posture)
+        to_csv(joined_data, f"data/db_output/{user_id}_all_feature.csv")
         print(f"{user_id} done")
+
+if __name__ == "__main__":
+    asyncio.run(main())

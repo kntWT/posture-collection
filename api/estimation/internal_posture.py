@@ -19,14 +19,14 @@ def update_estimation(path: str, file_name: str):
     if len(data) <= 0:
         print(f"the matched data with file \"{file_name}\" does not exist")
     else:
-        return update_estimation_from_data(data, path, file_name)
+        return asyncio.create_task(update_estimation_from_data(data, path, file_name))
 
 def update_estimation_from_time_based_on_fps(dir_path: str, time: str, execute: bool = True):
     data = fetch_closest_data(time)
     if len(data) <= 0:
         print(f"the matched data with file {time}.mp4 does not exist")
     else:
-        return update_estimation_from_data(data, dir_path, f"{time}.jpg", execute)
+        return asyncio.create_task(update_estimation_from_data(data, dir_path, f"{time}.jpg", execute))
 
 def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, file_names: List[str], execute: bool = True) -> List[Any]:
     frame_count: int = len(file_names)
@@ -36,7 +36,8 @@ def update_estimation_from_time_based_on_order(dir_path: str, start_time: str, f
         print(f"the matched data with file {start_time}.mp4 does not exist")
         return []
     for data, file_name in zip(data_list, file_names):
-        tasks.append(update_estimation_from_data(data, dir_path, file_name, execute))
+        task = asyncio.create_task(update_estimation_from_data(data, dir_path, file_name, execute))
+        tasks.append(task)
     return tasks
         
 async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str, execute: bool = True):

@@ -64,7 +64,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     # _subset: np.ndarray = np.array([[s if (i < 2 or i > 17) else -1 for i, s in enumerate(subset[n])] for n in range(1)])
     os.makedirs(save_path, exist_ok=True)
     if nose["score"] < 0.7 or \
-        neck["score"] < 0.15 or \
+        neck["score"] < 0.2 or \
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
         print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")

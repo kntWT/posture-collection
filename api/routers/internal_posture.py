@@ -4,15 +4,14 @@ import datetime
 from fastapi import APIRouter
 from models.internal_posture import internal_posture as internal_posture_model
 from config.db import conn
-from util import to_csv
+from utils import to_csv
 from . import jst
 from schemas.internal_posture import InternalPosture, InternalPostureOnlyOrientation, InternalPostureOnlyEstimation, InternalPosturePutFilename
 from schemas.user import UserId
 from sqlalchemy import select, asc, desc, func, text, between, and_
 from sqlalchemy.sql.expression import bindparam
 from typing import List
-from util import save_file
-from util import JsonParser
+from utils import save_file, JsonParser
 
 internal_posture = APIRouter(prefix="/internal-posture")
 
@@ -55,7 +54,6 @@ async def get_internal_posture_by_filename(file_name: str) -> InternalPosture:
 async def get_closest_internal_posture_by_timestamp(time: str) -> InternalPosture:
     timestamp: datetime.datetime = datetime.datetime.strptime(time + "000", "%Y-%m-%d_%H:%M:%S.%f")
     return conn.execute(select(internal_posture_model).
-                # with_hint(internal_posture_model, "FORCE INDEX (created_at_index)", 'mysql').
                 filter(between(internal_posture_model.c.created_at, timestamp - datetime.timedelta(microseconds=40000), timestamp + datetime.timedelta(microseconds=40000))).
                 order_by(asc(func.abs(
                     func.timestampdiff(text("MICROSECOND"), internal_posture_model.c.created_at, timestamp)))
@@ -107,7 +105,7 @@ async def post_internal_posture_only_orientation_list(orientations: List[Interna
     conn.commit()
     first_data = orientations[0]
     user_id = first_data.user_id
-    created_at = first_data.created_at.replace("/", "-").replace(" ", "_")
+    created_at = first_data.created_at.strftime("%Y-%m-%d_%H:%M:%S.%f") if type(first_data.created_at) is datetime.datetime else first_data.created_at.replace("/", "-").replace(" ", "-")
     to_csv(dict_list, f"data/input/internal_posture/orientation/{user_id}/{created_at}.csv")
     return conn.execute(select(internal_posture_model).filter(internal_posture_model.c.created_at in [o.created_at for o in orientations])).fetchall()
 
@@ -137,9 +135,9 @@ async def update_estimations(internal_posture_only_estimations: List[InternalPos
     ).where(internal_posture_model.c.id==bindparam("id"))
     conn.execute(stmt, dict_list)
     conn.commit()
-    first_data = internal_posture_only_estimations[0]
+    first_data = await get_internal_posture_by_id(internal_posture_only_estimations[0].id)
     user_id = first_data.user_id
-    created_at = first_data.created_at.replace("/", "-").replace(" ", "_")
+    created_at = first_data.created_at.strftime("%Y-%m-%d_%H:%M:%S.%f")
     to_csv(dict_list, f"data/input/internal_posture/estimation/{user_id}/{created_at}.csv")
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [e.id for e in internal_posture_only_estimations])).fetchall()
 
@@ -161,8 +159,8 @@ async def update_estimations_by_filename(file_names: List[InternalPosturePutFile
     ).where(internal_posture_model.c.id==bindparam("id"))
     conn.execute(stmt, dict_list)
     conn.commit()
-    first_data = file_names[0]
+    first_data = await get_internal_posture_by_id(file_names[0].id)
     user_id = first_data.user_id
-    now = datetime.datetime.now(jst).strftime("%Y-%m-%d_%H:%M:%S.%f")
-    to_csv(dict_list, f"data/input/internal_posture/file_name/{user_id}/{now}.csv")
+    start_time = file_names[0].file_name[:-4]
+    to_csv(dict_list, f"data/input/internal_posture/file_name/{user_id}/{start_time}.csv")
     return conn.execute(select(internal_posture_model).where(internal_posture_model.c.id in [f.id for f in file_names])).fetchall()

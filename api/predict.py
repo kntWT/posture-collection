@@ -3,7 +3,7 @@ import numpy as np
 import requests
 import os
 
-from util import load_data_from_csvs, parse_torch
+from utils import load_data_from_csvs, parse_torch
 
 API_URL = "http://localhost:8000"
 def fetch_data_from_api():
