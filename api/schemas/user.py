@@ -16,6 +16,7 @@ class UserPost(BaseModel):
     password: str
 
 class UserCalibrateInternalPosture(BaseModel):
+    id: int
     internal_posture_calibration_id: int
     neck_to_nose_standard: Optional[float | None]
 

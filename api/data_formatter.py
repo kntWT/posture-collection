@@ -7,7 +7,7 @@ import re
 from random import sample
 from scipy.spatial.transform import Rotation
 
-from utils import to_csv, to_flat
+from helpers import to_csv, to_flat
 
 def load_data_from_csvs(dir: str = "data", mode: str = "torch", filter_reg = re.compile(r".\.csv"), remove_reg = None):
     x = None
@@ -67,7 +67,7 @@ def parse_np(data):
     neck_to_nose = np.array([float(d["neck_to_nose"]) for d in data])
     standard_dist = np.array([float(d["standard_dist"]) for d in data])
     normalized_dist = neck_to_nose / standard_dist
-    neck_to_nose_standard = np.array([float(d["neck_to_nose_standard"]) if "neck_to_nose_standard" in d and d["neck_to_nose_standard"] != "NULL" else 2.49291504988 for d in data])
+    neck_to_nose_standard = np.array([float(d["neck_to_nose_standard"]) if "neck_to_nose_standard" in d and d["neck_to_nose_standard"] is not None else 2.5 for d in data])
     normalized_ratio = normalized_dist / neck_to_nose_standard
     orientation_alpha = np.array([float(d["orientation_alpha"]) for d in data])
     orientation_beta = np.array([float(d["orientation_beta"]) for d in data])
@@ -81,22 +81,39 @@ def parse_np(data):
     roll = np.array([float(d["roll"]) for d in data])
     nose_x = np.array([float(d["nose_x"]) for d in data])
     nose_y = np.array([float(d["nose_y"]) for d in data])
-    x = np.array([
-        # set_id,
-        normalized_ratio,
-        # alpha,
-        beta,
-        # gamma,
-        pitch,
-        # yaw,
-        # roll,
-        # nose_x,
-        # nose_y,
-    ])
+
     neck_angle = np.array([float(d["neck_angle"] if "neck_angle" in d else 0) for d in data])
     neck_angle_offset = np.array([float(d["neck_angle_offset"] if "neck_angle_offset" in d else 0) for d in data])
-    y = neck_angle - neck_angle_offset
-    # y = neck_angle
+
+    thres = 15
+    def filter(i):
+      return beta[i] <= 100 and \
+                beta[i] >= -10 and \
+                abs(pitch[i]) <= 100 \
+                #  abs(alpha[i]) <= thres and \
+                #  abs(gamma[i]) <= thres and \
+                #  abs(yaw[i]) <= thres and \
+                #  abs(roll[i]) <= thres and \
+    x_ = []
+    y_ = []
+    for i in range(len(data)):
+        if filter(i):
+            x_.append(np.array([
+                # set_id[i],
+                normalized_ratio[i],
+                # alpha[i],
+                beta[i],
+                # gamma[i],
+                # math.sin(pitch[i]),
+                pitch[i]
+                # yaw[i],
+                # roll[i],
+                # nose_x[i],
+                # nose_y[i],
+            ]))
+        y_.append(np.array(neck_angle[i] - neck_angle_offset[i]))
+    x = np.array(x_).T
+    y = np.array(y_)
     return x, y
 
 def parse_torch(data):
@@ -152,21 +169,21 @@ def join_data_with_timestamp(left_table, right_table, split_num: int = 5, thresh
             pre_timediff = timediff
         if abs(timediff) > threshold:
             if pre_row is not None:
-                right_row["ex_id"] = right_row.pop("id")
-                right_row.pop("user_id")
-                right_row["ex_created_at"] = right_row.pop("created_at")
-                set_id = int(left_row["set_id"]) - 1
-                if 0 <= set_id < 5:
-                    joined_table[set_id].append(dict(**pre_row, **right_row))
-                    # joined_table[int(left_row["set_id"]) - 1].append([dict(**pre_row), dict(**right_row)])
-                    pre_row = None
-            right_index += 1
+              right_row["ex_id"] = right_row.pop("id")
+              right_row.pop("user_id")
+              right_row["ex_created_at"] = right_row.pop("created_at")
+              set_id = int(left_row["set_id"]) - 1
+              if set_id < split_num:
+                joined_table[set_id].append(dict(**pre_row, **right_row))
+                # joined_table[int(left_row["set_id"]) - 1].append([dict(**pre_row), dict(**right_row)])
+                pre_row = None
+              right_index += 1
             if timediff < 0:
-                left_index += 1
+              left_index += 1
             elif timediff > 0:
-                right_index += 1
+              right_index += 1
             continue
-        
+
         if pre_row is None:
             pre_row = left_row
             left_index += 1
@@ -179,22 +196,22 @@ def join_data_with_timestamp(left_table, right_table, split_num: int = 5, thresh
             right_row.pop("user_id")
             right_row["ex_created_at"] = right_row.pop("created_at")
             set_id = int(left_row["set_id"]) - 1
-            if 0 <= set_id < 5:
-                joined_table[set_id].append(dict(**pre_row, **right_row))
-                # joined_table[int(left_row["set_id"]) - 1].append([dict(**pre_row), dict(**right_row)])
-                pre_row = None
+            if set_id < split_num:
+              joined_table[set_id].append(dict(**pre_row, **right_row))
+              # joined_table[int(left_row["set_id"]) - 1].append([dict(**pre_row), dict(**right_row)])
+              pre_row = None
             right_index += 1
         pre_timediff = timediff
 
     return joined_table
 
-def load_data_from_separated_csv(user_id: int, export=True):
-    internal_postures = load_data_from_csv(f"{user_id}_internal_postures.csv", "list")
-    external_postures = load_data_from_csv(f"{user_id}_external_postures.csv", "list") # joined with users
+def load_data_from_separated_csv(user_id: int, dir="./", export=True):
+    internal_postures = load_data_from_csv(os.path.join(dir, f"{user_id}_internal_postures.csv"), "list")
+    external_postures = load_data_from_csv(os.path.join(dir, f"{user_id}_external_postures.csv"), "list") # joined with users
     joined = join_data_with_timestamp(internal_postures, external_postures)
-    joined_np = np.array([parse_np(data) for data in joined])
     if export:
-        to_csv(to_flat(joined), f"{user_id}_all_feature.csv")
+        to_csv(to_flat(joined), os.path.join(dir, f"{user_id}_all_feature.csv"))
+    joined_np = np.stack([parse_np(data) for data in joined])
     return joined_np
 
 def split_data(data, split_num: int = 5):

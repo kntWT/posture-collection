@@ -4,14 +4,13 @@ import datetime
 from fastapi import APIRouter
 from models.internal_posture import internal_posture as internal_posture_model
 from config.db import conn
-from utils import to_csv
 from . import jst
 from schemas.internal_posture import InternalPosture, InternalPostureOnlyOrientation, InternalPostureOnlyEstimation, InternalPosturePutFilename
 from schemas.user import UserId
 from sqlalchemy import select, asc, desc, func, text, between, and_
 from sqlalchemy.sql.expression import bindparam
 from typing import List
-from utils import save_file, JsonParser
+from helpers import save_file, JsonParser, to_csv
 
 internal_posture = APIRouter(prefix="/internal-posture")
 
@@ -66,7 +65,7 @@ async def get_internal_posture_list_from_start_time(start_time: str, limit: int)
         return []
     first_id: int = first_data.id
     return conn.execute(select(internal_posture_model).
-                filter(and_(internal_posture_model.c.id >= first_id, internal_posture_model.c.calibrate_flag == False)).
+                filter(internal_posture_model.c.id >= first_id).
                 # order_by(asc(internal_posture_model.c.created_at)).
                 order_by(asc(internal_posture_model.c.id)).
                 limit(limit)

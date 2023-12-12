@@ -47,14 +47,12 @@ async def update_estimation_from_data(data: Dict, dir_path: str, file_name: str,
     try:
         if id == -1:
             return
-        print(f"{id}({file_name})", end=": ")
         image = cv2.imread(os.path.join(dir_path, file_name))
         face_feature, head_pose = await estimate_from_image(image, user_id, file_name)
         if face_feature is None or head_pose is None:
             return
         to_put_estimation = put_estimation(id, user_id, calibrate_flag, face_feature, head_pose, execute)
         to_put_file_name = put_file_name(id, file_name, execute)
-        print("done")
 
         if execute:
             return
@@ -71,8 +69,8 @@ async def estimate_from_image(image: np.ndarray, user_id: int, file_name: str):
     # tasks.append(estimate_body_pose(image, user_id, file_name))
     # tasks.append(estimate_head_pose(image, user_id, file_name))
     # return await asyncio.gather(*tasks)
+    head_pose = await estimate_head_pose(image.copy(), user_id, file_name)
     face_feature = await estimate_body_pose(image, user_id, file_name)
-    head_pose = await estimate_head_pose(image, user_id, file_name)
     return face_feature, head_pose
 
 def fetch_data_from_filename(file_name: str) -> Dict:

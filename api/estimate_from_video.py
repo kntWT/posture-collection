@@ -10,8 +10,8 @@ import requests
 from requests.exceptions import HTTPError
 
 from estimation.internal_posture import update_estimation_from_time_based_on_fps, update_estimation_from_time_based_on_order
-from utils import fetch_data_and_to_csv, to_csv
-from data_formatter import join_data_with_timestamp
+from helpers import fetch_data_and_to_csv, to_csv, to_flat
+from data_formatter import load_data_from_separated_csv, join_data_with_timestamp
 
 user_id_reg = re.compile(r"\d+")
 video_reg = re.compile(r".(mp4|webm)")
@@ -51,11 +51,11 @@ def get_tasks_from_time_based_on_order(cap, dir_path: str, file_name: str) -> Li
         ret, frame = cap.read()
         if not ret:
             break
-        count += 1
         now: datetime.datetime = start_time + datetime.timedelta(microseconds = micspf*count)
         file_name: str = now.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3] + ".jpg"
         cv2.imwrite(os.path.join(dir_path, file_name), frame)
         file_names.append(file_name)
+        count += 1
     tasks.extend(update_estimation_from_time_based_on_order(dir_path, start_time.strftime("%Y-%m-%d_%H:%M:%S.%f")[:-3], file_names, False))
     return tasks
 
@@ -88,19 +88,25 @@ async def main():
             if len(to_puts["internal_posture"]) > 0:
                 put_estimation = requests.put(f"{API_URL}/internal-posture/list/", json.dumps(to_puts["internal_posture"]))
                 put_estimation.raise_for_status()
-            if len(to_puts["calibration"]) > 0:
-                put_calibration = requests.put(f"{API_URL}/user/calibration/internal-posture/list/", json.dumps(to_puts["calibration"]))
-                put_calibration.raise_for_status()
             if len(to_puts["file_name"]) > 0:
                 put_file_name = requests.put(f"{API_URL}/internal-posture/filename/list/", json.dumps(to_puts["file_name"]))
                 put_file_name.raise_for_status()
+            if len(to_puts["calibration"]) > 0:
+                put_calibration = requests.put(f"{API_URL}/user/calibration/internal-posture/list/", json.dumps(to_puts["calibration"]))
+                put_calibration.raise_for_status()
         except HTTPError as e:
             print(e)
         
-        internal_posture = await fetch_data_and_to_csv(f"{API_URL}/internal-posture/{user_id}/estimated/", f"data/db_output/{user_id}_internal_postures.csv")
-        external_posture = await fetch_data_and_to_csv(f"{API_URL}/external-posture/{user_id}/joined/", f"data/db_output/{user_id}_external_postures.csv")
-        joined_data = join_data_with_timestamp(internal_posture, external_posture)
-        to_csv(joined_data, f"data/db_output/{user_id}_all_feature.csv")
+        try:
+            internal_posture = fetch_data_and_to_csv(f"{API_URL}/internal-posture/{user_id}/estimated/", f"data/db_output/{user_id}_internal_postures.csv")
+            external_posture = fetch_data_and_to_csv(f"{API_URL}/external-posture/{user_id}/joined/", f"data/db_output/{user_id}_external_postures.csv")
+            joined = join_data_with_timestamp(internal_posture, external_posture)
+            to_csv(to_flat(joined), f"data/db_output/{user_id}_all_feature.csv")
+            # load_data_from_separated_csv(user_id, "data/db_output/")
+        except HTTPError as e:
+            print(e)
+        except Exception as e:
+            print(e)
         print(f"{user_id} done")
 
 if __name__ == "__main__":

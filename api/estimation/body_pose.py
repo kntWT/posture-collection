@@ -41,7 +41,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     canvas = util.draw_bodypose(canvas, candidate, subset)
     save_path: str = f"{_image_dir}/{user_id}/neck"
     if len(subset) <= 0:
-        print("cannot detected")
+        # print("cannot detected")
         return None
     # if len(subset) >= 2:
     #     print("othre people detected")
@@ -52,7 +52,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
     right_eye_index: int = int(subset[0][14])
     left_eye_index: int = int(subset[0][15])
     if nose_index == -1 or neck_index == -1 or right_eye_index == -1 or left_eye_index == -1:
-        print(f"nose({nose_index}) or neck({neck_index}) or eyes([{right_eye_index}, {left_eye_index}]) cannot detected")
+        # print(f"nose({nose_index}) or neck({neck_index}) or eyes([{right_eye_index}, {left_eye_index}]) cannot detected")
         cv2.imwrite(f"{save_path}/_{file_name}", canvas)
         return None
     
@@ -67,7 +67,7 @@ async def estimate_body_pose(img: np.ndarray = None, user_id: int = 1, file_name
         neck["score"] < 0.2 or \
         right_eye["score"] < 0.7 or \
         left_eye["score"] < 0.7:
-        print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
+        # print(f"nose: {nose['score']}, neck: {neck['score']}, right eye: {right_eye['score']}, {left_eye['score']}")
         cv2.imwrite(f"{save_path}/_{file_name}", canvas)
         return None
 

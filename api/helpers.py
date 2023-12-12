@@ -44,6 +44,8 @@ def fetch_data_and_to_csv(url: str, file_name: str):
     return data
 
 def to_csv(data: List[Dict], file_name: str):
+    if len(data) <= 0:
+        return
     dir: str = "/".join(file_name.split("/")[:-1])
     os.makedirs(dir, exist_ok=True)
     header = ",".join(data[0].keys())

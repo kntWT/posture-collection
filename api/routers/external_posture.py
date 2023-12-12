@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from models.external_posture import external_posture as external_posture_model
 from models.user import user as user_model
 from config.db import conn
-from utils import to_csv
+from helpers import to_csv
 from schemas.external_posture import ExternalPosture, ExternalPosturePost, ExternalPostureWithUser
 from sqlalchemy import select, asc, desc
 from typing import List
