@@ -24,6 +24,7 @@ if __name__ == "__main__":
     os.makedirs(f"images/{user['id']}/original/", exist_ok=True)
     os.makedirs(f"images/{user['id']}/estimated/", exist_ok=True)
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FPS, 30)
     cap.set(3, 2000)
     cap.set(4, 2000)
 
@@ -35,6 +36,16 @@ if __name__ == "__main__":
         frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         image = frame.copy()
         _, h = image.shape[:2]
+
+        result = calculate_posture_by_marker(image, NECK_ANGLE_OFFSET)
+        key = cv2.waitKey(1)
+        if result is None:
+            cv2.imshow('Marker Detector', image)
+            if key & 0xFF == ord('q'):
+                break
+            continue
+        image, angles = result
+
         # whether send api or not
         if is_sending:
             cv2.putText(image, "recording", (10, h - 20), font, font_scale, black, font_thickness)
@@ -44,12 +55,6 @@ if __name__ == "__main__":
             else:
                 cv2.putText(image, "stopping", (10, h - 20), font, font_scale, red, font_thickness)
 
-        result = calculate_posture_by_marker(image, NECK_ANGLE_OFFSET)
-        key = cv2.waitKey(1)
-        if result is None:
-            cv2.imshow('Marker Detector', image)
-            continue
-        image, angles = result
         # press space key
         if key == 32:
             is_sending = not is_sending and len(postures) == 0
@@ -85,7 +90,7 @@ if __name__ == "__main__":
 
 # for posture in postures:
     # post(posture['user_id'], posture['neck_angle'], posture['torso_angle'], posture['created_at'])
-# post_list(postures)
+post_list(postures)
 
 cap.release()
 cv2.destroyAllWindows()

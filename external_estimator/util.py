@@ -149,17 +149,18 @@ def calculate_posture_by_marker(image, neck_angle_offset: float = 0):
         positions[id] = list(map(int, corner[0].mean(axis=0).tolist()))
     if positions[0] is None or positions[1] is None:
         return None
-    neck_inclination = findAngle(positions[0][0], positions[0][1], positions[1][0], positions[1][1])
+    if positions[2] is None:
+        positions[2] = (1 ,1)
+    
+    neck_inclination = findAngle(*positions[1], *positions[0]) * (-1 if positions[0][0] > positions[1][0] else 1)
     neck_angle = neck_inclination - neck_angle_offset
-    torso_inclination = 0
     if positions[2] is not None:
-        torso_inclination = findAngle(positions[1][0], positions[1][1], positions[2][0], positions[2][1])
+        torso_inclination = findAngle(*positions[2], *positions[1]) * (-1 if positions[1][0] > positions[2][0] else 1)
 
     # Draw landmarks.
-    cv2.circle(image, (positions[0][0], positions[0][1]), 7, yellow, -1)
-    cv2.circle(image, (positions[1][0], positions[1][1]), 7, yellow, -1)
-    if positions[2] is not None:
-        cv2.circle(image, (positions[2][0], positions[2][1]), 7, yellow, -1)
+    cv2.circle(image,positions[0], 7, yellow, -1)
+    cv2.circle(image, positions[1], 7, yellow, -1)
+    cv2.circle(image, positions[2], 7, yellow, -1)
 
     # Let's take y - coordinate of P3 100px above x1,  for display elegance.
     # Although we are taking y = 0 while calculating angle between P1,P2,P3.
@@ -180,9 +181,9 @@ def calculate_posture_by_marker(image, neck_angle_offset: float = 0):
 
     # Join landmarks.
     cv2.line(image, positions[0], positions[1], red, 4)
-    cv2.line(image, (positions[1][0], positions[1][1]), (positions[1][0], positions[1][1] - expand_offset), red, 4)
+    cv2.line(image, positions[1], (positions[1][0], positions[1][1] - expand_offset), red, 4)
     if positions[2] is not None:
         cv2.line(image, positions[1], positions[2], red, 4)
-        cv2.line(image, (positions[2][0], positions[2][1]), (positions[2][0], positions[2][1] - expand_offset), red, 4)
+        cv2.line(image, positions[2], (positions[2][0], positions[2][1] - expand_offset), red, 4)
 
     return image, {"neck_angle": neck_angle, "torso_angle": torso_inclination}
