@@ -81,7 +81,7 @@
           "defaultConfiguration": "development",
           "options": {
             "browserTarget": "myApp:build",
-            "proxyConfig": "src/proxy.conf.json",
+            "proxyConfig": "src/proxy_config/proxy.conf.json",
             "ssl": true,
             "sslKey": "../ssl/localhost-key.pem",
             "sslCert": "../ssl/localhost.pem",

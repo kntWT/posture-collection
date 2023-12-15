@@ -38,7 +38,7 @@ services:
       - ./.env
     container_name: posture-correction-api
     volumes:
-      - ./api/.venv:/app/.venv
+      - .venv:/app/.venv
       - ./api/__pycache__:/app/__pycache__
       - ./api:/app
     ports:
@@ -60,8 +60,9 @@ services:
       - 4200:4200
     volumes:
       - ./client:/app
-      - ./client/node_modules:/app/node_modules
-      - ./client/src/proxy.conf.json:/app/src/proxy.conf.json
+      - node_modules:/app/node_modules
+      - environments:/app/src/environments
+      - proxy_config:/app/src/proxy_config
     depends_on:
       - mysql
     tty: true
@@ -71,6 +72,23 @@ services:
 volumes:
   mysql:
   node_modules:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/client/node_modules
+      o: bind
+  environments:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/client/src/environments
+      o: bind
+  proxy_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/client/src/proxy_config
+      o: bind
   .venv:
 
 networks:
