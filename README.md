@@ -44,8 +44,8 @@
 
 |     | port | 説明                           | docker container 名 |
 | :-: | ---- | :----------------------------- | ------------------- |
-|     | 7150 | クライアント, Angular            | posture-correction-client       |
-|     | 7151 | API, Python                        | posture-correction-api          |
-|     | 7152 | データベース，   MySQL         | posture-correction-mysql        |
-|     | 7153 | データベースの操作, PHPMyAdmin | posture-correction-phpmyadmin   |
+|     | 4200 | クライアント, Angular            | posture-correction-client       |
+|     | 4201 | API, Python                        | posture-correction-api          |
+|     | 4202 | データベース，   MySQL         | posture-correction-mysql        |
+|     | 4203 | データベースの操作, PHPMyAdmin | posture-correction-phpmyadmin   |
 
