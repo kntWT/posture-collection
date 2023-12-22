@@ -18,7 +18,7 @@
   - [Python](https://www.python.org/)
     - フレームワーク：[FastAPI](https://fastapi.tiangolo.com//)
 - データベース
-  - MySQL
+  - [MySQL](https://www.mysql.com/)
 
 ### 設定ファイル
 - `./.env`
