@@ -1,4 +1,4 @@
-## posture-correction
+## posture-collection
 
 **〜概要〜**
 
@@ -24,7 +24,7 @@
 - `./.env`
   - ```
     MYSQL_HOST=mysql:3306
-    MYSQL_DATABASE=posture_correction_db
+    MYSQL_DATABASE=posture_collection_db
     MYSQL_USER=ユーザ名
     MYSQL_PASSWORD=パスワード
     MYSQL_ROOT_PASSWORD=パスワード
@@ -44,8 +44,8 @@
 
 |     | port | 説明                           | docker container 名 |
 | :-: | ---- | :----------------------------- | ------------------- |
-|     | 4200 | クライアント, Angular            | posture-correction-client       |
-|     | 4201 | API, Python                        | posture-correction-api          |
-|     | 4202 | データベース，   MySQL         | posture-correction-mysql        |
-|     | 4203 | データベースの操作, PHPMyAdmin | posture-correction-phpmyadmin   |
+|     | 4200 | クライアント, Angular            | posture-collection-client       |
+|     | 4201 | API, Python                        | posture-collection-api          |
+|     | 4202 | データベース，   MySQL         | posture-collection-mysql        |
+|     | 4203 | データベースの操作, PHPMyAdmin | posture-collection-phpmyadmin   |
 

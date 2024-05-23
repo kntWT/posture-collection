@@ -5,7 +5,7 @@ services:
       context: ./db
     env_file:
       - ./.env
-    container_name: posture-correction-mysql
+    container_name: posture-collection-mysql
     environment:
       - TZ=Asia/Tokyo
     volumes:
@@ -17,18 +17,18 @@ services:
     cap_add:
       - SYS_NICE
     networks:
-      - posture-correction
+      - posture-collection
   
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     env_file: ./.env
-    container_name: posture-correction-phpmyadmin
+    container_name: posture-collection-phpmyadmin
     ports:
       - 4203:80
     depends_on:
       - mysql
     networks:
-      - posture-correction
+      - posture-collection
 
   api:
     build: 
@@ -36,7 +36,7 @@ services:
       dockerfile: api/Dockerfile
     env_file:
       - ./.env
-    container_name: posture-correction-api
+    container_name: posture-collection-api
     volumes:
       - .venv:/app/.venv
       - ./api/__pycache__:/app/__pycache__
@@ -47,7 +47,7 @@ services:
       - mysql
     tty: true
     networks:
-      - posture-correction
+      - posture-collection
 
   client:
     build: 
@@ -55,7 +55,7 @@ services:
       dockerfile: client/Dockerfile
     env_file:
       - ./.env
-    container_name: posture-correction-client
+    container_name: posture-collection-client
     ports:
       - 4200:4200
     volumes:
@@ -67,7 +67,7 @@ services:
       - mysql
     tty: true
     networks:
-      - posture-correction
+      - posture-collection
 
 volumes:
   mysql:
@@ -92,5 +92,5 @@ volumes:
   .venv:
 
 networks:
-  posture-correction:
+  posture-collection:
     driver: bridge
