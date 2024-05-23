@@ -1,3 +1,4 @@
 [submodule "pytorch-openpose"]
 	path = pytorch-openpose
 	url = git@github.com:Hzzone/pytorch-openpose.git
+	ignroe = dirty
